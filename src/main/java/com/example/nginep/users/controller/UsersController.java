@@ -1,8 +1,10 @@
 package com.example.nginep.users.controller;
 
 import com.example.nginep.response.Response;
+import com.example.nginep.users.dto.SendVerifyRequestDto;
 import com.example.nginep.users.dto.SignupRequestDto;
 import com.example.nginep.users.dto.UsersResponseDto;
+import com.example.nginep.users.dto.VerifyRequestDto;
 import com.example.nginep.users.entity.Users;
 import com.example.nginep.users.service.UsersService;
 import lombok.extern.java.Log;
@@ -41,5 +43,15 @@ public class UsersController {
     @PostMapping("/sign-up")
     public ResponseEntity<Response<UsersResponseDto>> signup (@RequestBody SignupRequestDto signupRequestDto) {
         return Response.successResponse("Sign up success", usersService.signup(signupRequestDto));
+    }
+
+    @PostMapping("/send-verification")
+    public ResponseEntity<Response<String>> verifyAccount (@RequestBody SendVerifyRequestDto sendVerifyRequestDto) {
+        return Response.successResponse("Account verification success", usersService.sendVerificationCode(sendVerifyRequestDto));
+    }
+
+    @PostMapping("/verification")
+    public ResponseEntity<Response<String>> verifyAccount (@RequestBody VerifyRequestDto verifyRequestDto) {
+        return Response.successResponse("Account verification success", usersService.verifyUser(verifyRequestDto));
     }
 }

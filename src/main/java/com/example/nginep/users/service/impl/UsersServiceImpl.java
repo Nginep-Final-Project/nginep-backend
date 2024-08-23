@@ -1,17 +1,23 @@
 package com.example.nginep.users.service.impl;
 
+import com.example.nginep.auth.service.AuthService;
+import com.example.nginep.exceptions.applicationException.ApplicationException;
 import com.example.nginep.exceptions.duplicateException.DuplicateException;
 import com.example.nginep.exceptions.notFoundException.NotFoundException;
-import com.example.nginep.users.dto.SignupRequestDto;
-import com.example.nginep.users.dto.UpdateUsersRequestDto;
-import com.example.nginep.users.dto.UsersResponseDto;
+import com.example.nginep.users.dto.*;
 import com.example.nginep.users.entity.Users;
 import com.example.nginep.users.repository.UsersRepository;
 import com.example.nginep.users.service.UsersService;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.MimeMessage;
 import lombok.extern.java.Log;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,10 +27,14 @@ import java.util.Optional;
 public class UsersServiceImpl implements UsersService {
     private final UsersRepository usersRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JavaMailSender javaMailSender;
+    private final AuthService authService;
 
-    public UsersServiceImpl(UsersRepository usersRepository, PasswordEncoder passwordEncoder) {
+    public UsersServiceImpl(UsersRepository usersRepository, PasswordEncoder passwordEncoder, JavaMailSender javaMailSender, AuthService authService) {
         this.usersRepository = usersRepository;
         this.passwordEncoder = passwordEncoder;
+        this.javaMailSender = javaMailSender;
+        this.authService = authService;
     }
 
     @Override
@@ -110,8 +120,9 @@ public class UsersServiceImpl implements UsersService {
     public UsersResponseDto signup(SignupRequestDto signupRequestDto) {
         Users newUser = signupRequestDto.toEntity();
         newUser.setPassword(passwordEncoder.encode(signupRequestDto.getPassword()));
-        newUser.setIsVerified(false);
+        newUser.setIsVerified(true);
         Users savedUser = usersRepository.save(newUser);
+
         return mapToUsersResponseDto(savedUser);
     }
 
@@ -123,6 +134,46 @@ public class UsersServiceImpl implements UsersService {
     @Override
     public Users getDetailUserId(Long id) {
         return usersRepository.findById(id).orElseThrow(() -> new NotFoundException("User not found"));
+    }
+
+    @Override
+    public String sendVerificationCode(SendVerifyRequestDto sendVerifyRequestDto) {
+        try {
+            String toAddress = sendVerifyRequestDto.getEmail();
+            String fromAddress = "projectnginep@gmail.com";
+            String senderName = "Nginep";
+            String subject = "Please verify your registration";
+            String content = "Dear [[name]],<br>" + "Please Insert the verification code below:<br>" + "<h3>[[code]]</h3>" + "Thank you,<br>" + "Nginep.";
+
+            MimeMessage message = javaMailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true);
+
+
+            helper.setFrom(new InternetAddress(fromAddress, senderName));
+            helper.setTo(toAddress);
+            helper.setSubject(subject);
+
+            content = content.replace("[[name]]", sendVerifyRequestDto.getName());
+            content = content.replace("[[code]]", authService.generateVerificationEmail(sendVerifyRequestDto.getEmail()));
+            helper.setText(content, true);
+
+            javaMailSender.send(message);
+
+            return "Send verification code success";
+        } catch (MessagingException | UnsupportedEncodingException e) {
+            log.info(e.toString());
+            throw new ApplicationException("Send verification code failed");
+        }
+
+    }
+
+    @Override
+    public String verifyUser(VerifyRequestDto verifyRequestDto) {
+        if (authService.verifyAccount(verifyRequestDto)) {
+            return "Account verification success";
+        } else {
+            throw new ApplicationException("Account verification failed");
+        }
     }
 
     public UsersResponseDto mapToUsersResponseDto(Users user) {

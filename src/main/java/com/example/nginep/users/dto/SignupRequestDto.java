@@ -1,8 +1,6 @@
 package com.example.nginep.users.dto;
 
 import com.example.nginep.users.entity.Users;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import lombok.Data;
 
 import java.time.LocalDate;

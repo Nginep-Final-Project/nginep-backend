@@ -4,6 +4,8 @@ import com.example.nginep.auth.helpers.Claims;
 import com.example.nginep.auth.repository.AuthRedisRepository;
 import com.example.nginep.auth.service.AuthService;
 import com.example.nginep.exceptions.applicationException.ApplicationException;
+import com.example.nginep.exceptions.notFoundException.NotFoundException;
+import com.example.nginep.users.dto.VerifyRequestDto;
 import com.example.nginep.users.repository.UsersRepository;
 import lombok.extern.java.Log;
 import org.springframework.security.core.Authentication;
@@ -14,8 +16,10 @@ import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.stereotype.Service;
 
+import java.security.SecureRandom;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -67,6 +71,32 @@ public class AuthServiceImpl implements AuthService {
         authRedisRepository.saveJwtKey(authentication.getName(), jwt);
         return jwt;
     }
+
+    @Override
+    public String generateVerificationEmail(String email) {
+        SecureRandom random = new SecureRandom();
+        StringBuilder code = new StringBuilder(6);
+        for (int i = 0; i < 6; i++) {
+            code.append(random.nextInt(10));
+        }
+        authRedisRepository.saveVerificationKey(email, code.toString());
+        return code.toString();
+    }
+
+    @Override
+    public Boolean verifyAccount(VerifyRequestDto verifyRequestDto) {
+        var existingCode = authRedisRepository.getVerificationKey(verifyRequestDto.getEmail());
+        log.info("code: "+verifyRequestDto.getCode() + "redis code: " + existingCode);
+        if (existingCode == null) {
+            throw new NotFoundException("Verification code not found for email: " + verifyRequestDto.getEmail());
+        }
+        if (!Objects.equals(verifyRequestDto.getCode(), existingCode)) {
+            throw new ApplicationException("Verification code invalid");
+        }
+        authRedisRepository.deleteVerificationKey(verifyRequestDto.getEmail());
+        return true;
+    }
+
 
     @Override
     public String logout() {

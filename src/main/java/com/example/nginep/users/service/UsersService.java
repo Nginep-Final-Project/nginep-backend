@@ -1,8 +1,6 @@
 package com.example.nginep.users.service;
 
-import com.example.nginep.users.dto.SignupRequestDto;
-import com.example.nginep.users.dto.UpdateUsersRequestDto;
-import com.example.nginep.users.dto.UsersResponseDto;
+import com.example.nginep.users.dto.*;
 import com.example.nginep.users.entity.Users;
 
 import java.util.List;
@@ -21,5 +19,6 @@ public interface UsersService {
     UsersResponseDto signup(SignupRequestDto signupRequestDto);
     UsersResponseDto getProfile();
     Users getDetailUserId(Long id);
-
+    String sendVerificationCode(SendVerifyRequestDto sendVerifyRequestDto);
+    String verifyUser(VerifyRequestDto verifyRequestDto);
 }
