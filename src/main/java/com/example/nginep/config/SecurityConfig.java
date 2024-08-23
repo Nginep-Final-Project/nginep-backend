@@ -85,12 +85,12 @@ public class SecurityConfig {
                     auth.requestMatchers(HttpMethod.GET,"/api/v1/event/**").permitAll();
                     auth.requestMatchers("/api/v1/users/**").permitAll();
                     auth.requestMatchers("/api/v1/review/**").permitAll();
-                    auth.requestMatchers(HttpMethod.POST,"/api/v1/property/**").hasAuthority("SCOPE_TENANT");
-                    auth.requestMatchers(HttpMethod.PUT,"/api/v1/event/**").hasAuthority("SCOPE_TENANT");
-                    auth.requestMatchers(HttpMethod.DELETE,"/api/v1/event/**").hasAuthority("SCOPE_TENANT");
-                    auth.requestMatchers("/api/v1/order/**").hasAuthority("SCOPE_GUEST");
-                    auth.requestMatchers(HttpMethod.POST, "/api/v1/review/**").hasAuthority("SCOPE_GUEST");
-                    auth.requestMatchers("/api/v1/languages/**").hasAuthority("SCOPE_TENANT");
+                    auth.requestMatchers(HttpMethod.POST,"/api/v1/property/**").hasAuthority("SCOPE_tenant");
+                    auth.requestMatchers(HttpMethod.PUT,"/api/v1/event/**").hasAuthority("SCOPE_tenant");
+                    auth.requestMatchers(HttpMethod.DELETE,"/api/v1/event/**").hasAuthority("SCOPE_tenant");
+                    auth.requestMatchers("/api/v1/order/**").hasAuthority("SCOPE_guest");
+                    auth.requestMatchers(HttpMethod.POST, "/api/v1/review/**").hasAuthority("SCOPE_guest");
+                    auth.requestMatchers("/api/v1/languages").hasAuthority("SCOPE_tenant");
                     auth.anyRequest().authenticated();
                 })
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

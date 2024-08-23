@@ -1,5 +1,6 @@
 package com.example.nginep.users.entity;
 
+import com.example.nginep.languages.entity.Languages;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -12,6 +13,7 @@ import org.hibernate.annotations.ColumnDefault;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 
 @Entity
 @Table(name = "users")
@@ -81,6 +83,9 @@ public class Users {
 
     @Column(name = "bank_holder_name")
     private String bankHolderName;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Languages> languages;
 
     @NotNull
     @ColumnDefault("CURRENT_TIMESTAMP")

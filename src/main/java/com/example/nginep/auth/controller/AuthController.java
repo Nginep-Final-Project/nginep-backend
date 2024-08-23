@@ -54,10 +54,9 @@ public class AuthController {
 
             Cookie cookie = new Cookie("sid", token);
             cookie.setMaxAge(24 * 60 * 60);
-            cookie.setHttpOnly(true);
-            cookie.setPath("/");
+
             HttpHeaders headers = new HttpHeaders();
-            headers.add("Set-Cookie", cookie.getName() + "=" + cookie.getValue());
+            headers.add("Set-Cookie", cookie.getName() + "=" + cookie.getValue() + "; Path=/; HttpOnly");
 
             return ResponseEntity.status(HttpStatus.OK).headers(headers).body(Response.successResponse(response).getBody());
         } catch (AuthenticationException e) {
