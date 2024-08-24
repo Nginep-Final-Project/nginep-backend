@@ -8,6 +8,7 @@ import com.example.nginep.users.dto.VerifyRequestDto;
 import com.example.nginep.users.entity.Users;
 import com.example.nginep.users.service.UsersService;
 import lombok.extern.java.Log;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -48,6 +49,11 @@ public class UsersController {
     @PostMapping("/send-verification")
     public ResponseEntity<Response<String>> verifyAccount (@RequestBody SendVerifyRequestDto sendVerifyRequestDto) {
         return Response.successResponse("Account verification success", usersService.sendVerificationCode(sendVerifyRequestDto));
+    }
+
+    @PostMapping("/forgot-password-verification")
+    public ResponseEntity<Response<String>> verifyForgotPassword (@RequestParam(name = "email") String email) {
+        return Response.successResponse("Send forgot password verification success", usersService.sendVerifyResetPassword(email));
     }
 
     @PostMapping("/verification")

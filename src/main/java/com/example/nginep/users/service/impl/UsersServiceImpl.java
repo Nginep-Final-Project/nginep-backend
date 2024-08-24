@@ -18,6 +18,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Optional;
 
@@ -65,7 +67,7 @@ public class UsersServiceImpl implements UsersService {
         newUserData.setDateOfBirth(updateUsersRequestDto.getDateOfBirth());
         newUserData.setGender(updateUsersRequestDto.getGender());
         newUserData.setPhoneNumber(updateUsersRequestDto.getPhoneNumber());
-
+        usersRepository.save(newUserData);
         return "Update personal data success";
     }
 
@@ -74,13 +76,15 @@ public class UsersServiceImpl implements UsersService {
         Users newUserData = usersRepository.findByEmail(updateUsersRequestDto.getEmail()).orElseThrow(() -> new NotFoundException("Email already exists"));
         newUserData.setEmail(updateUsersRequestDto.getEmail());
         newUserData.setIsVerified(false);
+        usersRepository.save(newUserData);
         return "Update email success";
     }
 
     @Override
     public String updateChangePassword(UpdateUsersRequestDto updateUsersRequestDto) {
         Users newUserData = usersRepository.findByEmail(updateUsersRequestDto.getEmail()).orElseThrow(() -> new NotFoundException("Email already exists"));
-        newUserData.setPassword(updateUsersRequestDto.getPassword());
+        newUserData.setPassword(passwordEncoder.encode(updateUsersRequestDto.getPassword()));
+        usersRepository.save(newUserData);
         return "Update password success";
     }
 
@@ -88,6 +92,7 @@ public class UsersServiceImpl implements UsersService {
     public String updateAboutYourself(UpdateUsersRequestDto updateUsersRequestDto) {
         Users newUserData = usersRepository.findByEmail(updateUsersRequestDto.getEmail()).orElseThrow(() -> new NotFoundException("Email already exists"));
         newUserData.setAboutYourself(updateUsersRequestDto.getAboutYourself());
+        usersRepository.save(newUserData);
         return "Update about yourself success";
     }
 
@@ -97,6 +102,7 @@ public class UsersServiceImpl implements UsersService {
         newUserData.setBankName(updateUsersRequestDto.getBankName());
         newUserData.setBankAccountNumber(updateUsersRequestDto.getBankAccountNumber());
         newUserData.setBankHolderName(updateUsersRequestDto.getBankHolderName());
+        usersRepository.save(newUserData);
         return "Update bank account success";
     }
 
@@ -106,6 +112,7 @@ public class UsersServiceImpl implements UsersService {
         newUserData.setCheckinTime(updateUsersRequestDto.getCheckinTime());
         newUserData.setCheckoutTime(updateUsersRequestDto.getCheckoutTime());
         newUserData.setCancelPolicy(updateUsersRequestDto.getCancelPolicy());
+        usersRepository.save(newUserData);
         return "Update property rules success";
     }
 
@@ -113,6 +120,7 @@ public class UsersServiceImpl implements UsersService {
     public String updateProfilePicture(UpdateUsersRequestDto updateUsersRequestDto) {
         Users newUserData = usersRepository.findByEmail(updateUsersRequestDto.getEmail()).orElseThrow(() -> new NotFoundException("Email already exists"));
         newUserData.setProfilePicture(updateUsersRequestDto.getProfilePicture());
+        usersRepository.save(newUserData);
         return "Update profile picture success";
     }
 
@@ -164,7 +172,38 @@ public class UsersServiceImpl implements UsersService {
             log.info(e.toString());
             throw new ApplicationException("Send verification code failed");
         }
+    }
 
+    @Override
+    public String sendVerifyResetPassword(String email) {
+        try {
+            String fromAddress = "projectnginep@gmail.com";
+            String senderName = "Nginep";
+            String subject = "Reset password through this link";
+
+            // Create reset password URL with email parameter
+            String resetPasswordUrl = "http://localhost:3000/reset-password?email=" + URLEncoder.encode(email, StandardCharsets.UTF_8.toString());
+
+            String content = "Dear [[email]],<br><br>" + "Please click button below to re-direct to reset password page and reset your password:<br><br>" + "<a href=\"[[resetPasswordUrl]]\" style=\"background-color: #FF385C; border: none; color: white; padding: 15px 32px; text-align: center; text-decoration: none; display: inline-block; font-size: 16px; margin: 4px 2px; cursor: pointer;\">Reset Password</a><br><br>" + "Thank you,<br>" + "Nginep Team";
+
+            MimeMessage message = javaMailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true);
+
+            helper.setFrom(new InternetAddress(fromAddress, senderName));
+            helper.setTo(email);
+            helper.setSubject(subject);
+
+            content = content.replace("[[email]]", email);
+            content = content.replace("[[resetPasswordUrl]]", resetPasswordUrl);
+            helper.setText(content, true);  // Set to true for HTML content
+
+            javaMailSender.send(message);
+
+            return "Send verification reset password success";
+        } catch (MessagingException | UnsupportedEncodingException e) {
+            log.info("Error sending verification code:" + e);
+            throw new ApplicationException("Send verification code failed");
+        }
     }
 
     @Override

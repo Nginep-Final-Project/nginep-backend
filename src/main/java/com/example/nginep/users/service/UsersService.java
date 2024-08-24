@@ -20,5 +20,6 @@ public interface UsersService {
     UsersResponseDto getProfile();
     Users getDetailUserId(Long id);
     String sendVerificationCode(SendVerifyRequestDto sendVerifyRequestDto);
+    String sendVerifyResetPassword(String email);
     String verifyUser(VerifyRequestDto verifyRequestDto);
 }
