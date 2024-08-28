@@ -19,12 +19,19 @@ public class Booking {
     @Column(name = "id")
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @Column(name = "user_id", nullable = false)
     private Long userId;
 
-    @Column(name = "room_id")
+//    @ManyToOne(fetch = FetchType.LAZY)
+//    @JoinColumn(name = "user_id", insertable = false, updatable = false)
+//    private Users user;
+
+    @Column(name = "room_id", nullable = false)
     private Long roomId;
+
+//    @ManyToOne(fetch = FetchType.LAZY)
+//    @JoinColumn(name = "room_id", insertable = false, updatable = false)
+//    private Room room;
 
     @Column(name = "check_in_date", nullable = false)
     private LocalDate checkInDate;
