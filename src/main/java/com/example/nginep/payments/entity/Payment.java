@@ -4,6 +4,7 @@ import com.example.nginep.payments.enums.PaymentStatus;
 import com.example.nginep.payments.enums.PaymentType;
 import jakarta.persistence.*;
 import lombok.Data;
+
 import java.math.BigDecimal;
 import java.time.Instant;
 
@@ -34,6 +35,12 @@ public class Payment {
 
     @Column(name = "proof_of_payment")
     private String proofOfPayment;
+
+    @Column(name = "expiry_time")
+    private Instant expiryTime;
+
+    @Column(name = "attempts")
+    private int attempts = 0;
 
     @Column(name = "paid_at")
     private Instant paidAt;
