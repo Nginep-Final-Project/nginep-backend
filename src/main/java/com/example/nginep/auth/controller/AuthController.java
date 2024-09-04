@@ -80,7 +80,7 @@ public class AuthController {
         try {
 
 
-            GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(new NetHttpTransport(), new GsonFactory()).setAudience(Collections.singletonList("307790748043-hpvpv392ui1o82n2nvs6da356cj24p26.apps.googleusercontent.com")).build();
+            GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(new NetHttpTransport(), new GsonFactory()).setAudience(Collections.singletonList("")).build();
 
             GoogleIdToken idToken = verifier.verify(googleLoginRequestDto.getIdToken());
 
