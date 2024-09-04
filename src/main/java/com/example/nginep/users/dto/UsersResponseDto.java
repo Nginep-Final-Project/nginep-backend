@@ -13,6 +13,7 @@ public class UsersResponseDto {
     private String profilePicture;
     private Boolean isVerified;
     private LocalDate dateOfBirth;
+    private String role;
     private String gender;
     private String phoneNumber;
     private String aboutYourself;

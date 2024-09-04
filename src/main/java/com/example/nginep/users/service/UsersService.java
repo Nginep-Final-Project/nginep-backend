@@ -17,6 +17,7 @@ public interface UsersService {
     String updatePropertyRules(UpdateUsersRequestDto updateUsersRequestDto);
     String updateProfilePicture(UpdateUsersRequestDto updateUsersRequestDto);
     UsersResponseDto signup(SignupRequestDto signupRequestDto);
+    UsersResponseDto signinGoogle(SigninGoogleRequestDto signinGoogleRequestDto);
     UsersResponseDto getProfile();
     Users getDetailUserId(Long id);
     String sendVerificationCode(SendVerifyRequestDto sendVerifyRequestDto);

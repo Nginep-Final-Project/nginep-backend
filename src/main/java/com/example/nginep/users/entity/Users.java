@@ -52,8 +52,8 @@ public class Users {
     @Enumerated(EnumType.STRING)
     private Role role;
 
-    @NotNull
-    @Column(name = "date_of_birth", nullable = false)
+
+    @Column(name = "date_of_birth")
     private LocalDate dateOfBirth;
 
 

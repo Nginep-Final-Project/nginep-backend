@@ -46,8 +46,11 @@ public class UsersServiceImpl implements UsersService {
 
     @Override
     public UsersResponseDto getDetailUser(String email) {
-        Users emailExists = usersRepository.findByEmail(email).orElseThrow(() -> new NotFoundException("User not exists"));
-        return mapToUsersResponseDto(emailExists);
+        Users emailExists = usersRepository.findByEmail(email).orElse(null);
+       if(emailExists!=null) {
+           return mapToUsersResponseDto(emailExists);
+       }
+        return null;
     }
 
     @Override
@@ -131,6 +134,14 @@ public class UsersServiceImpl implements UsersService {
         newUser.setIsVerified(true);
         Users savedUser = usersRepository.save(newUser);
 
+        return mapToUsersResponseDto(savedUser);
+    }
+
+    @Override
+    public UsersResponseDto signinGoogle(SigninGoogleRequestDto signinGoogleRequestDto) {
+        Users newUser = signinGoogleRequestDto.toEntity();
+        newUser.setPassword(passwordEncoder.encode(signinGoogleRequestDto.getPassword()));
+        Users savedUser = usersRepository.save(newUser);
         return mapToUsersResponseDto(savedUser);
     }
 
@@ -224,6 +235,7 @@ public class UsersServiceImpl implements UsersService {
         response.setIsVerified(user.getIsVerified());
         response.setDateOfBirth(user.getDateOfBirth());
         response.setGender(user.getGender());
+        response.setRole(user.getRole().name());
         response.setPhoneNumber(user.getPhoneNumber());
         response.setAboutYourself(user.getAboutYourself());
         response.setCheckinTime(user.getCheckinTime());
