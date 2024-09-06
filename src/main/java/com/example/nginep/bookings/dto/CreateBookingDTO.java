@@ -14,4 +14,5 @@ public class CreateBookingDTO {
     private Integer numGuests;
     private PaymentType paymentMethod;
     private String userMessage;
+    private String bank;
 }

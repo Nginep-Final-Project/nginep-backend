@@ -1,10 +1,10 @@
 package com.example.nginep.payments.service.impl;
 
-import com.example.nginep.bookings.entity.Booking;
 import com.example.nginep.cloudinary.dto.CloudinaryUploadResponseDto;
 import com.example.nginep.cloudinary.service.CloudinaryService;
 import com.example.nginep.exceptions.applicationException.ApplicationException;
 import com.example.nginep.exceptions.notFoundException.NotFoundException;
+import com.example.nginep.midtrans.service.MidtransService;
 import com.example.nginep.payments.dto.UploadProofOfPaymentDto;
 import com.example.nginep.payments.entity.Payment;
 import com.example.nginep.payments.enums.PaymentStatus;
@@ -12,6 +12,7 @@ import com.example.nginep.payments.enums.PaymentType;
 import com.example.nginep.payments.repository.PaymentRepository;
 import com.example.nginep.payments.service.PaymentService;
 import lombok.RequiredArgsConstructor;
+import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -20,7 +21,9 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -28,22 +31,50 @@ public class PaymentServiceImpl implements PaymentService {
 
     private final PaymentRepository paymentRepository;
     private final CloudinaryService cloudinaryService;
+    private final MidtransService midtransService;
 
     private static final List<String> ALLOWED_FILE_EXTENSIONS = Arrays.asList("jpg", "png");
     private static final long MAX_FILE_SIZE = 1024 * 1024;
     private static final int MAX_PAYMENT_ATTEMPTS = 3;
 
     @Override
-    public Payment createPaymentForBooking(Long bookingId, BigDecimal amount, PaymentType paymentType) {
+    @Transactional
+    public Map<String, Object> createPayment(Long bookingId, BigDecimal amount, PaymentType paymentType, String bank) {
         Payment payment = new Payment();
         payment.setBookingId(bookingId);
         payment.setAmount(amount);
         payment.setPaymentType(paymentType);
         payment.setStatus(PaymentStatus.PENDING_PAYMENT);
-        payment.setExpiryTime(Instant.now().plus(1, ChronoUnit.HOURS));
+        payment.setExpiryTime(Instant.now().plus(60, ChronoUnit.MINUTES));
         payment.setAttempts(0);
 
-        return paymentRepository.save(payment);
+        payment = paymentRepository.save(payment);
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("payment", payment);
+
+        if (paymentType == PaymentType.AUTOMATIC_PAYMENT) {
+            try {
+                JSONObject chargeResponse = midtransService.createBankTransferCharge(
+                        payment.getId().toString(),
+                        payment.getAmount().longValue(),
+                        bank
+                );
+
+                String transactionStatus = chargeResponse.getString("transaction_status");
+                if (!"pending".equals(transactionStatus)) {
+                    throw new ApplicationException("Unexpected transaction status: " + transactionStatus);
+                }
+
+                paymentRepository.save(payment);
+
+                result.put("midtransResponse", chargeResponse.toMap());
+            } catch (Exception e) {
+                throw new ApplicationException("Failed to create Midtrans charge: " + e.getMessage());
+            }
+        }
+
+        return result;
     }
 
     @Override
@@ -153,4 +184,51 @@ public class PaymentServiceImpl implements PaymentService {
     private Payment findPaymentByBookingId(Long bookingId) {
         return paymentRepository.findByBookingId(bookingId).orElseThrow(() -> new NotFoundException("Payment not found for booking id: " + bookingId));
     }
+
+    @Override
+    @Transactional
+    public Map<String, Object> getMidtransDetails(String orderId) {
+        Payment payment = findPaymentById(Long.parseLong(orderId));
+        Map<String, Object> details = new HashMap<>();
+
+        try {
+            JSONObject midtransStatus = midtransService.getTransactionStatus(payment.getId().toString());
+            details.put("midtransDetails", midtransStatus.toMap());
+        } catch (Exception e) {
+            throw new ApplicationException("Failed to fetch Midtrans data: " + e.getMessage());
+        }
+
+        return details;
+    }
+
+    @Override
+    @Transactional
+    public Payment updatePaymentStatusMidtrans(String orderId, String transactionStatus, String fraudStatus) {
+        Payment payment = findPaymentById(Long.valueOf(orderId));
+
+        switch (transactionStatus) {
+            case "capture":
+                if ("challenge".equals(fraudStatus)) {
+                    payment.setStatus(PaymentStatus.AWAITING_CONFIRMATION);
+                } else if ("accept".equals(fraudStatus)) {
+                    payment.setStatus(PaymentStatus.CONFIRMED);
+                }
+                break;
+            case "settlement":
+                payment.setStatus(PaymentStatus.CONFIRMED);
+                break;
+            case "deny":
+            case "cancel":
+            case "expire":
+                payment.setStatus(PaymentStatus.CANCELLED);
+                break;
+            case "pending":
+                payment.setStatus(PaymentStatus.PENDING_PAYMENT);
+                break;
+            default:
+                throw new ApplicationException("Unhandled transaction status: " + transactionStatus);
+        }
+        return paymentRepository.save(payment);
+    }
+
 }

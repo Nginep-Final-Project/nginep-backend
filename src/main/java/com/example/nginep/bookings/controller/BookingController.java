@@ -5,6 +5,7 @@ import com.example.nginep.bookings.entity.Booking;
 import com.example.nginep.bookings.enums.BookingStatus;
 import com.example.nginep.bookings.service.BookingService;
 import com.example.nginep.orchestrator.BookingPaymentOrchestrator;
+import com.example.nginep.orchestrator.BookingPaymentResult;
 import com.example.nginep.response.Response;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -21,8 +22,8 @@ public class BookingController {
     private final BookingPaymentOrchestrator bookingPaymentOrchestrator;
 
     @PostMapping("/create")
-    public ResponseEntity<Response<Booking>> createBooking(@RequestBody CreateBookingDTO bookingDTO) {
-        Booking newBooking = bookingPaymentOrchestrator.createBookingWithPayment(bookingDTO);
+    public ResponseEntity<Response<BookingPaymentResult>> createBooking(@RequestBody CreateBookingDTO bookingDTO) {
+        BookingPaymentResult newBooking = bookingPaymentOrchestrator.createBookingWithPayment(bookingDTO);
         return Response.successResponse("Booking created successfully", newBooking);
     }
 

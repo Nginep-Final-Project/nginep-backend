@@ -11,6 +11,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/v1/payments")
 @RequiredArgsConstructor
@@ -36,5 +38,11 @@ public class PaymentController {
     public ResponseEntity<Response<Object>> rejectPayment(@PathVariable Long paymentId) {
         bookingPaymentOrchestrator.rejectPayment(paymentId);
         return Response.successResponse("Payment rejected successfully");
+    }
+
+    @GetMapping("/{paymentId}/midtrans-details")
+    public ResponseEntity<Response<Map<String, Object>>> getMidtransDetails(@PathVariable String paymentId) {
+        Map<String, Object> paymentDetails = paymentService.getMidtransDetails(paymentId);
+        return Response.successResponse("Payment details retrieved successfully", paymentDetails);
     }
 }

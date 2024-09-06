@@ -7,6 +7,7 @@ import com.example.nginep.bookings.repository.BookingRepository;
 import com.example.nginep.bookings.service.BookingService;
 import com.example.nginep.exceptions.applicationException.ApplicationException;
 import com.example.nginep.exceptions.notFoundException.NotFoundException;
+import com.example.nginep.payments.entity.Payment;
 import com.example.nginep.payments.enums.PaymentStatus;
 import com.example.nginep.payments.service.PaymentService;
 import com.example.nginep.rooms.entity.Room;
@@ -32,7 +33,7 @@ public class BookingServiceImpl implements BookingService {
         validateBookingDates(bookingDTO);
         Room room = roomService.getRoomById(bookingDTO.getRoomId());
 
-        //TODO: Make the service later for user checking
+        //TODO: Make the service later for user checking, or should be by authorization
 //        if (!userService.existsById(bookingDTO.getUserId())) {
 //            throw new NotFoundException("User with id " + bookingDTO.getUserId() + " not found");
 //        }
@@ -122,5 +123,35 @@ public class BookingServiceImpl implements BookingService {
 
     private Booking findBookingById(Long bookingId) {
         return bookingRepository.findById(bookingId).orElseThrow(() -> new NotFoundException("Booking not found with id: " + bookingId));
+    }
+
+    @Override
+    @Transactional
+    public Booking updateBookingStatusMidtrans(String orderId, String transactionStatus, String fraudStatus) {
+        Booking booking = findBookingById(Long.valueOf(orderId));
+
+        switch (transactionStatus) {
+            case "capture":
+                if ("challenge".equals(fraudStatus)) {
+                    booking.setStatus(BookingStatus.AWAITING_CONFIRMATION);
+                } else if ("accept".equals(fraudStatus)) {
+                    booking.setStatus(BookingStatus.AWAITING_CONFIRMATION);
+                }
+                break;
+            case "settlement":
+                booking.setStatus(BookingStatus.AWAITING_CONFIRMATION);
+                break;
+            case "deny":
+            case "cancel":
+            case "expire":
+                booking.setStatus(BookingStatus.CANCELLED);
+                break;
+            case "pending":
+                booking.setStatus(BookingStatus.PENDING_PAYMENT);
+                break;
+            default:
+                throw new ApplicationException("Unhandled transaction status: " + transactionStatus);
+        }
+        return bookingRepository.save(booking);
     }
 }

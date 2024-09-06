@@ -8,8 +8,11 @@ import com.example.nginep.payments.entity.Payment;
 import com.example.nginep.payments.enums.PaymentStatus;
 import com.example.nginep.payments.service.PaymentService;
 import lombok.RequiredArgsConstructor;
+import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -19,14 +22,17 @@ public class BookingPaymentOrchestrator {
     private final PaymentService paymentService;
 
     @Transactional
-    public Booking createBookingWithPayment(CreateBookingDTO bookingDTO) {
+    public BookingPaymentResult createBookingWithPayment(CreateBookingDTO bookingDTO) {
         Booking booking = bookingService.createBooking(bookingDTO);
-        Payment payment = paymentService.createPaymentForBooking(
+        Map<String, Object> paymentResult = paymentService.createPayment(
                 booking.getId(),
                 booking.getFinalPrice(),
-                bookingDTO.getPaymentMethod()
+                bookingDTO.getPaymentMethod(),
+                bookingDTO.getBank()
         );
-        return booking;
+        Payment payment = (Payment) paymentResult.get("payment");
+        Map<String, Object> midtransResponse = (Map<String, Object>) paymentResult.get("midtransResponse");
+        return new BookingPaymentResult(booking, payment, midtransResponse);
     }
 
     @Transactional

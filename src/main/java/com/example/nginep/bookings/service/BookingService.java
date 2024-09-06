@@ -18,4 +18,6 @@ public interface BookingService {
     Booking cancelBookingByTenant(Long bookingId);
 
     Booking cancelBookingByUser(Long bookingId);
+
+    Booking updateBookingStatusMidtrans(String orderId, String transactionStatus, String fraudStatus);
 }
