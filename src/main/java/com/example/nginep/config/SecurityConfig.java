@@ -82,12 +82,9 @@ public class SecurityConfig {
                     auth.requestMatchers("/error/**").permitAll();
                     auth.requestMatchers("/api/v1/auth/**").permitAll();
                     auth.requestMatchers("/api/v1/home/**").permitAll();
-                    auth.requestMatchers(HttpMethod.GET,"/api/v1/event/**").permitAll();
                     auth.requestMatchers("/api/v1/users/**").permitAll();
                     auth.requestMatchers("/api/v1/review/**").permitAll();
                     auth.requestMatchers(HttpMethod.POST,"/api/v1/property/**").hasAuthority("SCOPE_tenant");
-                    auth.requestMatchers(HttpMethod.PUT,"/api/v1/event/**").hasAuthority("SCOPE_tenant");
-                    auth.requestMatchers(HttpMethod.DELETE,"/api/v1/event/**").hasAuthority("SCOPE_tenant");
                     auth.requestMatchers("/api/v1/order/**").hasAuthority("SCOPE_guest");
                     auth.requestMatchers(HttpMethod.POST, "/api/v1/review/**").hasAuthority("SCOPE_guest");
                     auth.requestMatchers("/api/v1/languages").hasAuthority("SCOPE_tenant");
@@ -119,7 +116,7 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(List.of("http://localhost:3000"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
