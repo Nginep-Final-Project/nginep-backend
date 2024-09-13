@@ -3,6 +3,7 @@ package com.example.nginep.users.entity;
 import com.example.nginep.category.entity.Category;
 import com.example.nginep.facility.entity.Facility;
 import com.example.nginep.languages.entity.Languages;
+import com.example.nginep.property.entity.Property;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -97,6 +98,10 @@ public class Users {
     @JsonIgnore
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Category> categories;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Property> properties;
 
     @NotNull
     @ColumnDefault("CURRENT_TIMESTAMP")
