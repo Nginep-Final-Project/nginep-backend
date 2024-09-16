@@ -10,8 +10,8 @@ import com.example.nginep.propertyFacility.dto.PropertyFacilityRequestDto;
 import com.example.nginep.propertyFacility.service.PropertyFacilityService;
 import com.example.nginep.propertyImages.dto.PropertyImageRequestDto;
 import com.example.nginep.propertyImages.service.PropertyImageService;
-import com.example.nginep.room.dto.RoomRequestDto;
-import com.example.nginep.room.service.RoomService;
+import com.example.nginep.rooms.dto.RoomRequestDto;
+import com.example.nginep.rooms.service.RoomService;
 import com.example.nginep.users.entity.Users;
 import com.example.nginep.users.service.UsersService;
 import lombok.extern.java.Log;
@@ -60,8 +60,8 @@ public class PropertyServiceImpl implements PropertyService {
             RoomRequestDto newPropertyRoom = new RoomRequestDto();
             newPropertyRoom.setName(roomRequestDto.getName());
             newPropertyRoom.setDescription(roomRequestDto.getDescription());
-            newPropertyRoom.setPrice(roomRequestDto.getPrice());
-            newPropertyRoom.setMaxOccupancy(roomRequestDto.getMaxOccupancy());
+            newPropertyRoom.setBasePrice(roomRequestDto.getBasePrice());
+            newPropertyRoom.setMaxGuests(roomRequestDto.getMaxGuests());
             newPropertyRoom.setPropertyId(newProperty.getId());
             roomService.createRoom(newPropertyRoom);
         }

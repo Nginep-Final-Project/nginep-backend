@@ -11,9 +11,11 @@ public class UsersResponseDto {
     private String fullName;
     private String email;
     private String profilePicture;
+    private String picturePublicId;
     private Boolean isVerified;
     private LocalDate dateOfBirth;
     private String role;
+    private String accountType;
     private String gender;
     private String phoneNumber;
     private String aboutYourself;

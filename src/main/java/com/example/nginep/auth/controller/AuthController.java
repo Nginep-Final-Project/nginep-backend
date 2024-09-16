@@ -3,6 +3,7 @@ package com.example.nginep.auth.controller;
 import com.example.nginep.auth.dto.AuthResponseDto;
 import com.example.nginep.auth.dto.GoogleLoginRequestDto;
 import com.example.nginep.auth.dto.LoginRequestDto;
+import com.example.nginep.auth.dto.ResetPasswordRequestDto;
 import com.example.nginep.auth.entity.UserAuth;
 import com.example.nginep.auth.service.AuthService;
 import com.example.nginep.response.Response;
@@ -78,9 +79,7 @@ public class AuthController {
     @PostMapping("/google-login")
     public ResponseEntity<?> googleLogin(@RequestBody GoogleLoginRequestDto googleLoginRequestDto) {
         try {
-
-
-            GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(new NetHttpTransport(), new GsonFactory()).setAudience(Collections.singletonList("")).build();
+            GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(new NetHttpTransport(), new GsonFactory()).setAudience(Collections.singletonList("307790748043-hpvpv392ui1o82n2nvs6da356cj24p26.apps.googleusercontent.com")).build();
 
             GoogleIdToken idToken = verifier.verify(googleLoginRequestDto.getIdToken());
 
@@ -125,6 +124,11 @@ public class AuthController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Response.failedResponse("Error during Google login: " + e.getMessage()).getBody());
         }
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<Response<String>> resetPassword(@RequestBody ResetPasswordRequestDto resetPasswordRequestDto) {
+        return Response.successResponse("Reset password success", authService.resetPassword(resetPasswordRequestDto));
     }
 
     @PostMapping("/logout")

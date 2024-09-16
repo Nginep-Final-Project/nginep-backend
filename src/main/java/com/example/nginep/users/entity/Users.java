@@ -47,6 +47,9 @@ public class Users {
     @Column(name = "profile_picture")
     private String profilePicture;
 
+    @Column(name="picture_public_id")
+    private String picturePublicId;
+
     @NotNull
     @Column(name = "is_verified", nullable = false)
     private Boolean isVerified;
@@ -54,6 +57,11 @@ public class Users {
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private Role role;
+
+    @NotNull
+    @Column(name = "account_type", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private AccountType accountType;
 
 
     @Column(name = "date_of_birth")
@@ -135,5 +143,10 @@ public class Users {
     public enum Role {
         guest,
         tenant
+    }
+
+    public enum AccountType {
+        email,
+        google
     }
 }

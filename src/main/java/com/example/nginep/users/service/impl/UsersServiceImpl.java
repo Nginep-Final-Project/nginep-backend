@@ -1,6 +1,9 @@
 package com.example.nginep.users.service.impl;
 
+import com.example.nginep.auth.helpers.Claims;
 import com.example.nginep.auth.service.AuthService;
+import com.example.nginep.cloudinary.dto.CloudinaryUploadResponseDto;
+import com.example.nginep.cloudinary.service.CloudinaryService;
 import com.example.nginep.exceptions.applicationException.ApplicationException;
 import com.example.nginep.exceptions.duplicateException.DuplicateException;
 import com.example.nginep.exceptions.notFoundException.NotFoundException;
@@ -16,6 +19,7 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -31,12 +35,16 @@ public class UsersServiceImpl implements UsersService {
     private final PasswordEncoder passwordEncoder;
     private final JavaMailSender javaMailSender;
     private final AuthService authService;
+    private final CloudinaryService cloudinaryService;
 
-    public UsersServiceImpl(UsersRepository usersRepository, PasswordEncoder passwordEncoder, JavaMailSender javaMailSender, AuthService authService) {
+    public UsersServiceImpl(UsersRepository usersRepository, PasswordEncoder passwordEncoder,
+                            JavaMailSender javaMailSender, AuthService authService,
+                            CloudinaryService cloudinaryService) {
         this.usersRepository = usersRepository;
         this.passwordEncoder = passwordEncoder;
         this.javaMailSender = javaMailSender;
         this.authService = authService;
+        this.cloudinaryService = cloudinaryService;
     }
 
     @Override
@@ -65,7 +73,9 @@ public class UsersServiceImpl implements UsersService {
 
     @Override
     public String updatePersonalData(UpdateUsersRequestDto updateUsersRequestDto) {
-        Users newUserData = usersRepository.findByEmail(updateUsersRequestDto.getEmail()).orElseThrow(() -> new NotFoundException("Email already exists"));
+        var claims = Claims.getClaimsFromJwt();
+        var email = (String) claims.get("sub");
+        Users newUserData = usersRepository.findByEmail(email).orElseThrow(() -> new NotFoundException("User not found"));
         newUserData.setFullName(updateUsersRequestDto.getFullName());
         newUserData.setDateOfBirth(updateUsersRequestDto.getDateOfBirth());
         newUserData.setGender(updateUsersRequestDto.getGender());
@@ -76,7 +86,12 @@ public class UsersServiceImpl implements UsersService {
 
     @Override
     public String updateEmail(UpdateUsersRequestDto updateUsersRequestDto) {
-        Users newUserData = usersRepository.findByEmail(updateUsersRequestDto.getEmail()).orElseThrow(() -> new NotFoundException("Email already exists"));
+        var claims = Claims.getClaimsFromJwt();
+        var email = (String) claims.get("sub");
+        Users newUserData = usersRepository.findByEmail(email).orElseThrow(() -> new NotFoundException("User not found"));
+        if(!newUserData.getAccountType().name().equals("email")){
+            throw new ApplicationException("Sign up with google account can not change email");
+        }
         newUserData.setEmail(updateUsersRequestDto.getEmail());
         newUserData.setIsVerified(false);
         usersRepository.save(newUserData);
@@ -85,7 +100,12 @@ public class UsersServiceImpl implements UsersService {
 
     @Override
     public String updateChangePassword(UpdateUsersRequestDto updateUsersRequestDto) {
-        Users newUserData = usersRepository.findByEmail(updateUsersRequestDto.getEmail()).orElseThrow(() -> new NotFoundException("Email already exists"));
+        var claims = Claims.getClaimsFromJwt();
+        var email = (String) claims.get("sub");
+        Users newUserData = usersRepository.findByEmail(email).orElseThrow(() -> new NotFoundException("User not found"));
+        if(!newUserData.getAccountType().name().equals("email")){
+            throw new ApplicationException("Sign up with google account can not change password");
+        }
         newUserData.setPassword(passwordEncoder.encode(updateUsersRequestDto.getPassword()));
         usersRepository.save(newUserData);
         return "Update password success";
@@ -93,7 +113,9 @@ public class UsersServiceImpl implements UsersService {
 
     @Override
     public String updateAboutYourself(UpdateUsersRequestDto updateUsersRequestDto) {
-        Users newUserData = usersRepository.findByEmail(updateUsersRequestDto.getEmail()).orElseThrow(() -> new NotFoundException("Email already exists"));
+        var claims = Claims.getClaimsFromJwt();
+        var email = (String) claims.get("sub");
+        Users newUserData = usersRepository.findByEmail(email).orElseThrow(() -> new NotFoundException("User not found"));
         newUserData.setAboutYourself(updateUsersRequestDto.getAboutYourself());
         usersRepository.save(newUserData);
         return "Update about yourself success";
@@ -101,7 +123,9 @@ public class UsersServiceImpl implements UsersService {
 
     @Override
     public String updateBankAccount(UpdateUsersRequestDto updateUsersRequestDto) {
-        Users newUserData = usersRepository.findByEmail(updateUsersRequestDto.getEmail()).orElseThrow(() -> new NotFoundException("Email already exists"));
+        var claims = Claims.getClaimsFromJwt();
+        var email = (String) claims.get("sub");
+        Users newUserData = usersRepository.findByEmail(email).orElseThrow(() -> new NotFoundException("User not found"));
         newUserData.setBankName(updateUsersRequestDto.getBankName());
         newUserData.setBankAccountNumber(updateUsersRequestDto.getBankAccountNumber());
         newUserData.setBankHolderName(updateUsersRequestDto.getBankHolderName());
@@ -111,7 +135,9 @@ public class UsersServiceImpl implements UsersService {
 
     @Override
     public String updatePropertyRules(UpdateUsersRequestDto updateUsersRequestDto) {
-        Users newUserData = usersRepository.findByEmail(updateUsersRequestDto.getEmail()).orElseThrow(() -> new NotFoundException("Email already exists"));
+        var claims = Claims.getClaimsFromJwt();
+        var email = (String) claims.get("sub");
+        Users newUserData = usersRepository.findByEmail(email).orElseThrow(() -> new NotFoundException("User not found"));
         newUserData.setCheckinTime(updateUsersRequestDto.getCheckinTime());
         newUserData.setCheckoutTime(updateUsersRequestDto.getCheckoutTime());
         newUserData.setCancelPolicy(updateUsersRequestDto.getCancelPolicy());
@@ -120,10 +146,26 @@ public class UsersServiceImpl implements UsersService {
     }
 
     @Override
-    public String updateProfilePicture(UpdateUsersRequestDto updateUsersRequestDto) {
-        Users newUserData = usersRepository.findByEmail(updateUsersRequestDto.getEmail()).orElseThrow(() -> new NotFoundException("Email already exists"));
-        newUserData.setProfilePicture(updateUsersRequestDto.getProfilePicture());
+    public String updateProfilePicture(MultipartFile file, String publicId) {
+        var claims = Claims.getClaimsFromJwt();
+        var email = (String) claims.get("sub");
+        Users newUserData = usersRepository.findByEmail(email).orElseThrow(() -> new NotFoundException("User not found"));
+        CloudinaryUploadResponseDto resultDto = new CloudinaryUploadResponseDto();
+
+        if (publicId == null || publicId.isEmpty()){
+            log.info("upload image");
+            resultDto = cloudinaryService.uploadImage(file);
+        }
+
+        if (publicId != null ) {
+            log.info("update image");
+            resultDto = cloudinaryService.updateImage(file,publicId);
+        }
+
+        newUserData.setPicturePublicId(resultDto.getPublicId());
+        newUserData.setProfilePicture(resultDto.getUrl());
         usersRepository.save(newUserData);
+
         return "Update profile picture success";
     }
 
@@ -147,7 +189,10 @@ public class UsersServiceImpl implements UsersService {
 
     @Override
     public UsersResponseDto getProfile() {
-        return null;
+        var claims = Claims.getClaimsFromJwt();
+        var email = (String) claims.get("sub");
+        Users user = usersRepository.findByEmail(email).orElseThrow(() -> new NotFoundException("User not found"));
+        return mapToUsersResponseDto(user);
     }
 
     @Override
@@ -232,10 +277,12 @@ public class UsersServiceImpl implements UsersService {
         response.setFullName(user.getFullName());
         response.setEmail(user.getEmail());
         response.setProfilePicture(user.getProfilePicture());
+        response.setPicturePublicId(user.getPicturePublicId());
         response.setIsVerified(user.getIsVerified());
         response.setDateOfBirth(user.getDateOfBirth());
         response.setGender(user.getGender());
         response.setRole(user.getRole().name());
+        response.setAccountType(user.getAccountType().name());
         response.setPhoneNumber(user.getPhoneNumber());
         response.setAboutYourself(user.getAboutYourself());
         response.setCheckinTime(user.getCheckinTime());

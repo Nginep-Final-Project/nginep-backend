@@ -4,7 +4,7 @@ import com.example.nginep.property.entity.DateRange;
 import com.example.nginep.property.entity.PeakSeasonRate;
 import com.example.nginep.propertyFacility.dto.PropertyFacilityResponseDto;
 import com.example.nginep.propertyImages.dto.PropertyImageResponseDto;
-import com.example.nginep.room.dto.RoomResponseDto;
+import com.example.nginep.rooms.dto.RoomResponseDto;
 import lombok.Data;
 
 import java.util.List;

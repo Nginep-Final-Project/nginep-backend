@@ -2,7 +2,7 @@ package com.example.nginep.property.entity;
 
 import com.example.nginep.propertyFacility.entity.PropertyFacility;
 import com.example.nginep.propertyImages.entity.PropertyImage;
-import com.example.nginep.room.entity.Room;
+import com.example.nginep.rooms.entity.Room;
 import com.example.nginep.users.entity.Users;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
