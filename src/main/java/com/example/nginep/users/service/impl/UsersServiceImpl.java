@@ -66,6 +66,11 @@ public class UsersServiceImpl implements UsersService {
     }
 
     @Override
+    public Users getDetailUserByEmail(String email) {
+        return usersRepository.findByEmail(email).orElse(null);
+    }
+
+    @Override
     public String checkDuplicateEmail(String email) {
         Optional<Users> emailExists = usersRepository.findByEmail(email);
         if (emailExists.isPresent()) {

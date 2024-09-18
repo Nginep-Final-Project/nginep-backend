@@ -29,9 +29,14 @@ public class FacilityController {
         return Response.successResponse("Create facility success", facilityService.createFacility(facilityRequestDto));
     }
 
-    @GetMapping("/{tenantId}")
-    public ResponseEntity<Response<List<FacilityResponseDto>>> getFacilityByTenantId(@PathVariable Long tenantId) {
-        return Response.successResponse("List facility by tenant id: " + tenantId, facilityService.getFacilityByTenantId(tenantId));
+    @PutMapping
+    public ResponseEntity<Response<FacilityResponseDto>> editFacility(@RequestBody FacilityRequestDto facilityRequestDto) {
+        return Response.successResponse("Edit facility success", facilityService.editFacility(facilityRequestDto));
+    }
+
+    @GetMapping
+    public ResponseEntity<Response<List<FacilityResponseDto>>> getFacilityByTenantId() {
+        return Response.successResponse("Get list facility success" , facilityService.getFacilityByTenantId());
     }
 
     @DeleteMapping("/{facilityId}")

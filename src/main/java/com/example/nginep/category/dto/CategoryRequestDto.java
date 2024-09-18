@@ -6,8 +6,9 @@ import lombok.Data;
 
 @Data
 public class CategoryRequestDto {
+    private Long id;
     private String value;
-    private Long tenantId;
+
 
     public Category toEntity(Users user){
         Category newCategory = new Category();

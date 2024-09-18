@@ -3,6 +3,8 @@ package com.example.nginep.category.controller;
 import com.example.nginep.category.dto.CategoryRequestDto;
 import com.example.nginep.category.dto.CategoryResponseDto;
 import com.example.nginep.category.service.CategoryService;
+import com.example.nginep.facility.dto.FacilityRequestDto;
+import com.example.nginep.facility.dto.FacilityResponseDto;
 import com.example.nginep.response.Response;
 import lombok.extern.java.Log;
 import org.springframework.http.ResponseEntity;
@@ -27,9 +29,14 @@ public class CategoryController {
         return Response.successResponse("Create category success", categoryService.createCategory(categoryRequestDto));
     }
 
-    @GetMapping("/{tenantId}")
-    public ResponseEntity<Response<List<CategoryResponseDto>>> getCategoryByTenantId(@PathVariable Long tenantId) {
-        return Response.successResponse("List category by tenant id: " + tenantId, categoryService.getCategoryByTenantId(tenantId));
+    @PutMapping
+    public ResponseEntity<Response<CategoryResponseDto>> editCategory(@RequestBody CategoryRequestDto categoryRequestDto) {
+        return Response.successResponse("Edit category success", categoryService.editCategory(categoryRequestDto));
+    }
+
+    @GetMapping
+    public ResponseEntity<Response<List<CategoryResponseDto>>> getCategoryByTenantId() {
+        return Response.successResponse("Get list category success", categoryService.getCategoryByTenantId());
     }
 
     @DeleteMapping("/{categoryId}")

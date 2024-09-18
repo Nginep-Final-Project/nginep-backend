@@ -8,6 +8,7 @@ import java.util.List;
 
 public interface FacilityService {
     FacilityResponseDto createFacility(FacilityRequestDto facilityRequestDto);
-    List<FacilityResponseDto> getFacilityByTenantId(Long tenantId);
+    FacilityResponseDto editFacility(FacilityRequestDto facilityRequestDto);
+    List<FacilityResponseDto> getFacilityByTenantId();
     String deleteFacility(Long facilityId);
 }

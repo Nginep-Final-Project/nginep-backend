@@ -9,6 +9,7 @@ import java.util.List;
 public interface UsersService {
     List<UsersResponseDto> getAllUsers();
     UsersResponseDto getDetailUser(String email);
+    Users getDetailUserByEmail(String email);
     String checkDuplicateEmail(String email);
     String updatePersonalData(UpdateUsersRequestDto updateUsersRequestDto);
     String updateEmail(UpdateUsersRequestDto updateUsersRequestDto);

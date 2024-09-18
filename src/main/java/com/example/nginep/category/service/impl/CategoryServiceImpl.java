@@ -1,5 +1,6 @@
 package com.example.nginep.category.service.impl;
 
+import com.example.nginep.auth.helpers.Claims;
 import com.example.nginep.category.dto.CategoryRequestDto;
 import com.example.nginep.category.dto.CategoryResponseDto;
 import com.example.nginep.category.entity.Category;
@@ -26,15 +27,30 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public CategoryResponseDto createCategory(CategoryRequestDto categoryRequestDto) {
-        Users user = usersService.getDetailUserId(categoryRequestDto.getTenantId());
+        var claims = Claims.getClaimsFromJwt();
+        var email = (String) claims.get("sub");
+        Users user = usersService.getDetailUserByEmail(email);
 
         Category newCategory = categoryRepository.save(categoryRequestDto.toEntity(user));
         return mapToCategoryResponseDto(newCategory);
     }
 
     @Override
-    public List<CategoryResponseDto> getCategoryByTenantId(Long tenantId) {
-        return categoryRepository.findAllByUserId(tenantId).stream().map(this::mapToCategoryResponseDto).toList();
+    public CategoryResponseDto editCategory(CategoryRequestDto categoryRequestDto) {
+        Category category = categoryRepository.findById(categoryRequestDto.getId())
+                .orElseThrow(()-> new NotFoundException("Category with id: " + categoryRequestDto.getId() + " not found"));
+        category.setValue(categoryRequestDto.getValue().trim().toLowerCase().replace(" ","-"));
+        category.setLabel(categoryRequestDto.getValue());
+        Category updatedCategory = categoryRepository.save(category);
+        return mapToCategoryResponseDto(updatedCategory);
+    }
+
+    @Override
+    public List<CategoryResponseDto> getCategoryByTenantId() {
+        var claims = Claims.getClaimsFromJwt();
+        var email = (String) claims.get("sub");
+        Users user = usersService.getDetailUserByEmail(email);
+        return categoryRepository.findAllByUserId(user.getId()).stream().map(this::mapToCategoryResponseDto).toList();
     }
 
     @Override
@@ -49,7 +65,6 @@ public class CategoryServiceImpl implements CategoryService {
         response.setId(category.getId());
         response.setValue(category.getValue());
         response.setLabel(category.getLabel());
-        response.setTenantId(category.getUser().getId());
         return response;
     }
 }
