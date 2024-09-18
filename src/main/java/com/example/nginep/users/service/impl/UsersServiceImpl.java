@@ -7,6 +7,7 @@ import com.example.nginep.cloudinary.service.CloudinaryService;
 import com.example.nginep.exceptions.applicationException.ApplicationException;
 import com.example.nginep.exceptions.duplicateException.DuplicateException;
 import com.example.nginep.exceptions.notFoundException.NotFoundException;
+import com.example.nginep.languages.service.LanguagesService;
 import com.example.nginep.users.dto.*;
 import com.example.nginep.users.entity.Users;
 import com.example.nginep.users.repository.UsersRepository;
@@ -15,6 +16,7 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 import lombok.extern.java.Log;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -36,15 +38,17 @@ public class UsersServiceImpl implements UsersService {
     private final JavaMailSender javaMailSender;
     private final AuthService authService;
     private final CloudinaryService cloudinaryService;
+    private final LanguagesService languagesService;
 
     public UsersServiceImpl(UsersRepository usersRepository, PasswordEncoder passwordEncoder,
                             JavaMailSender javaMailSender, AuthService authService,
-                            CloudinaryService cloudinaryService) {
+                            CloudinaryService cloudinaryService, @Lazy LanguagesService languagesService) {
         this.usersRepository = usersRepository;
         this.passwordEncoder = passwordEncoder;
         this.javaMailSender = javaMailSender;
         this.authService = authService;
         this.cloudinaryService = cloudinaryService;
+        this.languagesService = languagesService;
     }
 
     @Override
@@ -93,9 +97,9 @@ public class UsersServiceImpl implements UsersService {
             throw new ApplicationException("Sign up with google account can not change email");
         }
         newUserData.setEmail(updateUsersRequestDto.getEmail());
-        newUserData.setIsVerified(false);
+        newUserData.setIsVerified(true);
         usersRepository.save(newUserData);
-        return "Update email success";
+        return "Update email success. Please login again";
     }
 
     @Override
@@ -191,6 +195,7 @@ public class UsersServiceImpl implements UsersService {
     public UsersResponseDto getProfile() {
         var claims = Claims.getClaimsFromJwt();
         var email = (String) claims.get("sub");
+        log.info("email Profile>>>>  " + email);
         Users user = usersRepository.findByEmail(email).orElseThrow(() -> new NotFoundException("User not found"));
         return mapToUsersResponseDto(user);
     }
@@ -284,6 +289,7 @@ public class UsersServiceImpl implements UsersService {
         response.setRole(user.getRole().name());
         response.setAccountType(user.getAccountType().name());
         response.setPhoneNumber(user.getPhoneNumber());
+        response.setLanguages(languagesService.getLanguagesByTenantId(user.getId()));
         response.setAboutYourself(user.getAboutYourself());
         response.setCheckinTime(user.getCheckinTime());
         response.setCheckoutTime(user.getCheckoutTime());
