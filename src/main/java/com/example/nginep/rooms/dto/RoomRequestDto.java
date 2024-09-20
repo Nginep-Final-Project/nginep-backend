@@ -1,11 +1,12 @@
 package com.example.nginep.rooms.dto;
 
-import com.example.nginep.bookings.dto.CreateBookingDTO;
+import com.example.nginep.bookings.dto.CreateNotAvailableBookingDTO;
 import com.example.nginep.property.entity.Property;
 import com.example.nginep.rooms.entity.Room;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Data
 public class RoomRequestDto {
@@ -15,7 +16,7 @@ public class RoomRequestDto {
     private Integer maxGuests;
     private BigDecimal basePrice;
     private Integer totalRoom;
-    private CreateBookingDTO Booking;
+    private List<CreateNotAvailableBookingDTO> notAvailableDates;
     private Long propertyId;
 
     public Room toEntity(Property property) {

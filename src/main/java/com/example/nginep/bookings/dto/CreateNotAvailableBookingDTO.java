@@ -2,6 +2,8 @@ package com.example.nginep.bookings.dto;
 
 import com.example.nginep.bookings.entity.Booking;
 import com.example.nginep.bookings.enums.BookingStatus;
+import com.example.nginep.rooms.entity.Room;
+import com.example.nginep.users.entity.Users;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -9,8 +11,8 @@ import java.time.LocalDate;
 
 @Data
 public class CreateNotAvailableBookingDTO {
-    private Long userId;
-    private Long roomId;
+    private Users user;
+    private Room room;
     private LocalDate checkInDate;
     private LocalDate checkOutDate;
     private BigDecimal finalPrice;
@@ -18,8 +20,8 @@ public class CreateNotAvailableBookingDTO {
 
     public Booking toEntity(){
         Booking newBooking = new Booking();
-        newBooking.setUserId(userId);
-        newBooking.setRoomId(roomId);
+        newBooking.setUser(user);
+        newBooking.setRoom(room);
         newBooking.setCheckInDate(checkInDate);
         newBooking.setCheckOutDate(checkOutDate);
         newBooking.setFinalPrice(finalPrice);

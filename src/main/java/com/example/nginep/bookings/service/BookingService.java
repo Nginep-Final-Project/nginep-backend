@@ -16,6 +16,8 @@ public interface BookingService {
 
 //    List<Booking> getTenantBookings(Long tenantId, BookingStatus status);
 
+    List<Booking> getBookingByRoomId(Long r);
+
     Booking confirmBooking(Long bookingId);
 
     Booking cancelBookingByTenant(Long bookingId);

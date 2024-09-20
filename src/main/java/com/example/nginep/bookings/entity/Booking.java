@@ -2,6 +2,7 @@ package com.example.nginep.bookings.entity;
 
 import com.example.nginep.bookings.enums.BookingStatus;
 import com.example.nginep.payments.entity.Payment;
+import com.example.nginep.reviews.entity.Review;
 import com.example.nginep.rooms.entity.Room;
 import com.example.nginep.users.entity.Users;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -11,6 +12,7 @@ import lombok.Data;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.List;
 
 @Data
 @Entity

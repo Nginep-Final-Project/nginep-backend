@@ -26,8 +26,6 @@ public class PropertyRequestDto {
     private String propertyPostalCode;
     private Double propertyLatitude;
     private Double propertyLongitude;
-    private DateRange notAvailabilityDates;
-    private DateRange peakSeasonDates;
     private List<RoomRequestDto> rooms;
     private List<PeakSeasonRatesRequestDto> peakSeasonRates;
     private Long tenantId;

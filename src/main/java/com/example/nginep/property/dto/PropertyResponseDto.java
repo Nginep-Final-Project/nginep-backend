@@ -1,5 +1,6 @@
 package com.example.nginep.property.dto;
 
+import com.example.nginep.peakSeasonRates.dto.PeakSeasonRatesResponseDto;
 import com.example.nginep.peakSeasonRates.entity.DateRange;
 import com.example.nginep.property.entity.PeakSeasonRate;
 import com.example.nginep.propertyFacility.dto.PropertyFacilityResponseDto;
@@ -24,9 +25,7 @@ public class PropertyResponseDto {
     private String propertyPostalCode;
     private Double propertyLatitude;
     private Double propertyLongitude;
-    private DateRange notAvailabilityDates;
-    private DateRange peakSeasonDates;
     private List<RoomResponseDto> rooms;
-    private PeakSeasonRate peakSeasonRate;
+    private List<PeakSeasonRatesResponseDto> peakSeasonRate;
     private Long tenantId;
 }

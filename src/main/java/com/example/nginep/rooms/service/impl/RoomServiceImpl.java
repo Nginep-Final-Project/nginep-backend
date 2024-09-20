@@ -1,5 +1,7 @@
 package com.example.nginep.rooms.service.impl;
 
+import com.example.nginep.bookings.dto.CreateNotAvailableBookingDTO;
+import com.example.nginep.bookings.service.BookingService;
 import com.example.nginep.property.entity.Property;
 import com.example.nginep.property.service.PropertyService;
 import com.example.nginep.rooms.dto.RoomRequestDto;
@@ -8,6 +10,7 @@ import com.example.nginep.rooms.entity.Room;
 import com.example.nginep.rooms.repository.RoomRepository;
 import com.example.nginep.rooms.service.RoomService;
 import com.example.nginep.exceptions.notFoundException.NotFoundException;
+import com.example.nginep.users.service.UsersService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -20,6 +23,7 @@ public class RoomServiceImpl implements RoomService {
 
     private final RoomRepository roomRepository;
     private final PropertyService propertyService;
+    private final BookingService bookingService;
 
     @Override
     public Room getRoomById(Long id) {
@@ -30,7 +34,18 @@ public class RoomServiceImpl implements RoomService {
     @Override
     public RoomResponseDto createRoom(RoomRequestDto roomRequestDto) {
         Property property = propertyService.getPropertyById(roomRequestDto.getPropertyId());
+
         Room newRoom = roomRepository.save(roomRequestDto.toEntity(property));
+        for (CreateNotAvailableBookingDTO notAvailableBookingDTO: roomRequestDto.getNotAvailableDates()) {
+            CreateNotAvailableBookingDTO newBooking = new CreateNotAvailableBookingDTO();
+            newBooking.setUser(property.getUser());
+            newBooking.setRoom(newRoom);
+            newBooking.setCheckInDate(notAvailableBookingDTO.getCheckInDate());
+            newBooking.setCheckOutDate(notAvailableBookingDTO.getCheckOutDate());
+            newBooking.setFinalPrice(newRoom.getBasePrice());
+            newBooking.setNumGuests(newRoom.getMaxGuests());
+            bookingService.createNotAvailableBooking(newBooking);
+        }
         return mapToRoomResponseDto(newRoom);
     }
 
@@ -65,7 +80,8 @@ public class RoomServiceImpl implements RoomService {
         response.setDescription(room.getDescription());
         response.setBasePrice(room.getBasePrice());
         response.setMaxGuests(room.getMaxGuests());
-        response.setPropertyId(room.getProperty().getId());
+        response.setTotalRoom(room.getTotalRoom());
+        response.setBooking(bookingService.getBookingByRoomId(room.getId()));
         return response;
     }
 }

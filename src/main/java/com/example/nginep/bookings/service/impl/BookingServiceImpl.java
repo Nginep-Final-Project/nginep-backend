@@ -13,12 +13,14 @@ import com.example.nginep.payments.enums.PaymentStatus;
 import com.example.nginep.payments.service.PaymentService;
 import com.example.nginep.rooms.entity.Room;
 import com.example.nginep.rooms.service.RoomService;
+import com.example.nginep.users.service.UsersService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -27,6 +29,7 @@ public class BookingServiceImpl implements BookingService {
     private final BookingRepository bookingRepository;
     private final RoomService roomService;
     private final PaymentService paymentService;
+    private final UsersService usersService;
 
     @Override
     @Transactional
@@ -40,8 +43,8 @@ public class BookingServiceImpl implements BookingService {
 //        }
 
         Booking booking = new Booking();
-        booking.setUserId(bookingDTO.getUserId());
-        booking.setRoomId(bookingDTO.getRoomId());
+        booking.setUser(usersService.getDetailUserId(bookingDTO.getUserId()));
+        booking.setRoom(room);
         booking.setCheckInDate(bookingDTO.getCheckInDate());
         booking.setCheckOutDate(bookingDTO.getCheckOutDate());
         booking.setNumGuests(bookingDTO.getNumGuests());
@@ -77,6 +80,11 @@ public class BookingServiceImpl implements BookingService {
         Booking booking = findBookingById(bookingId);
         booking.setStatus(status);
         bookingRepository.save(booking);
+    }
+
+    @Override
+    public List<Booking> getBookingByRoomId(Long roomId) {
+        return bookingRepository.findAllByRoomId(roomId);
     }
 
 //    @Override

@@ -1,6 +1,8 @@
 package com.example.nginep.property.service.impl;
 
 import com.example.nginep.exceptions.notFoundException.NotFoundException;
+import com.example.nginep.peakSeasonRates.dto.PeakSeasonRatesRequestDto;
+import com.example.nginep.peakSeasonRates.service.PeakSeasonRatesService;
 import com.example.nginep.property.dto.PropertyRequestDto;
 import com.example.nginep.property.dto.PropertyResponseDto;
 import com.example.nginep.property.entity.Property;
@@ -28,15 +30,17 @@ public class PropertyServiceImpl implements PropertyService {
     private final PropertyImageService propertyImageService;
     private final RoomService roomService;
     private final UsersService usersService;
+    private final PeakSeasonRatesService peakSeasonRatesService;
 
     public PropertyServiceImpl(PropertyRepository propertyRepository, UsersService usersService,
                                @Lazy PropertyFacilityService propertyFacilityService, @Lazy PropertyImageService propertyImageService,
-                               @Lazy RoomService roomService) {
+                               @Lazy RoomService roomService, PeakSeasonRatesService peakSeasonRatesService) {
         this.propertyRepository = propertyRepository;
         this.propertyFacilityService = propertyFacilityService;
         this.propertyImageService = propertyImageService;
         this.roomService = roomService;
         this.usersService = usersService;
+        this.peakSeasonRatesService = peakSeasonRatesService;
     }
 
 
@@ -67,6 +71,14 @@ public class PropertyServiceImpl implements PropertyService {
             newPropertyRoom.setPropertyId(newProperty.getId());
             roomService.createRoom(newPropertyRoom);
         }
+        for (PeakSeasonRatesRequestDto peakSeasonRatesRequestDto: propertyRequestDto.getPeakSeasonRates()) {
+            PeakSeasonRatesRequestDto newPeakSeasonRates = new PeakSeasonRatesRequestDto();
+            newPeakSeasonRates.setPeakSeasonDates(peakSeasonRatesRequestDto.getPeakSeasonDates());
+            newPeakSeasonRates.setRateType(peakSeasonRatesRequestDto.getRateType());
+            newPeakSeasonRates.setRateValue(peakSeasonRatesRequestDto.getRateValue());
+            newPeakSeasonRates.setPropertyId(newProperty.getId());
+            peakSeasonRatesService.createPeakSeasonRates(newPeakSeasonRates);
+        }
 
         return mapToPropertyResponseDto(newProperty);
     }
@@ -84,9 +96,6 @@ public class PropertyServiceImpl implements PropertyService {
         property.setPropertyPostalCode(propertyRequestDto.getPropertyPostalCode());
         property.setPropertyLatitude(propertyRequestDto.getPropertyLatitude());
         property.setPropertyLongitude(propertyRequestDto.getPropertyLongitude());
-        property.setNotAvailabilityDates(propertyRequestDto.getNotAvailabilityDates());
-        property.setPeakSeasonDates(propertyRequestDto.getPeakSeasonDates());
-        property.setPeakSeasonRate(propertyRequestDto.getPeakSeasonRate());
         Property editedProperty = propertyRepository.save(property);
         return mapToPropertyResponseDto(editedProperty);
     }
@@ -123,10 +132,8 @@ public class PropertyServiceImpl implements PropertyService {
         response.setPropertyPostalCode(property.getPropertyPostalCode());
         response.setPropertyLatitude(property.getPropertyLatitude());
         response.setPropertyLongitude(property.getPropertyLongitude());
-        response.setNotAvailabilityDates(property.getNotAvailabilityDates());
-        response.setPeakSeasonDates(property.getPeakSeasonDates());
         response.setRooms(roomService.getRoomByPropertyId(property.getId()));
-        response.setPeakSeasonRate(property.getPeakSeasonRate());
+        response.setPeakSeasonRate(peakSeasonRatesService.getPeakSeasonRatesByPropertyId(property.getId()));
         response.setTenantId(property.getUser().getId());
         return response;
     }

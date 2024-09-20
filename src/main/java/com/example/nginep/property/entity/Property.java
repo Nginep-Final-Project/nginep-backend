@@ -84,31 +84,6 @@ public class Property {
     @JoinColumn(name = "tenant_id", nullable = false)
     private Users user;
 
-//    @Embedded
-//    @AttributeOverrides({
-//            @AttributeOverride(name = "from", column = @Column(name = "not_available_from")),
-//            @AttributeOverride(name = "to", column = @Column(name = "not_available_to"))
-//    })
-//    private DateRange notAvailabilityDates;
-
-//    @Embedded
-//    @AttributeOverrides({
-//            @AttributeOverride(name = "from", column = @Column(name = "peak_season_from")),
-//            @AttributeOverride(name = "to", column = @Column(name = "peak_season_to"))
-//    })
-//    private DateRange peakSeasonDates;
-
-
-
-//    @Embedded
-//    @AttributeOverrides({
-//            @AttributeOverride(name = "incrementType", column = @Column(name = "increment_type")),
-//            @AttributeOverride(name = "amount", column = @Column(name = "amount"))
-//    })
-//    private PeakSeasonRate peakSeasonRate;
-
-
-
     @NotNull
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "created_at", nullable = false)
