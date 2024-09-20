@@ -9,6 +9,10 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import org.hibernate.annotations.ColumnDefault;
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
@@ -16,6 +20,9 @@ import java.util.List;
 @Data
 @Entity
 @Table(name = "rooms")
+@NoArgsConstructor
+@Getter
+@Setter
 public class Room {
 
     @Id

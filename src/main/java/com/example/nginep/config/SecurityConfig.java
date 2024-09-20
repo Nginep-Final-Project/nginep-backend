@@ -89,6 +89,9 @@ public class SecurityConfig {
                     auth.requestMatchers(HttpMethod.POST, "/api/v1/review/**").hasAuthority("SCOPE_guest");
                     auth.requestMatchers("/api/v1/languages").hasAuthority("SCOPE_tenant");
                     auth.requestMatchers("/api/v1/facility").hasAuthority("SCOPE_tenant");
+                    auth.requestMatchers("/api/v1/bookings/**").permitAll();
+                    auth.requestMatchers("/api/v1/payments/**").permitAll();
+                    auth.requestMatchers("/api/v1/midtrans/**").permitAll();
                     auth.anyRequest().authenticated();
                 })
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
