@@ -23,6 +23,7 @@ import com.example.nginep.property.entity.Property;
 import com.example.nginep.users.entity.Users;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
 import lombok.extern.slf4j.Slf4j;
@@ -35,7 +36,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class BookingServiceImpl implements BookingService {
 
@@ -44,6 +44,14 @@ public class BookingServiceImpl implements BookingService {
     private final PaymentService paymentService;
     private final UsersService userService;
     private final TaskScheduler taskScheduler;
+
+    public BookingServiceImpl(@Lazy BookingRepository bookingRepository, @Lazy RoomService roomService, PaymentService paymentService, UsersService userService, TaskScheduler taskScheduler) {
+        this.bookingRepository = bookingRepository;
+        this.roomService = roomService;
+        this.paymentService = paymentService;
+        this.userService = userService;
+        this.taskScheduler = taskScheduler;
+    }
 
     @Override
     @Transactional

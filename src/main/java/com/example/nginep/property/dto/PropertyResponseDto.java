@@ -1,8 +1,6 @@
 package com.example.nginep.property.dto;
 
 import com.example.nginep.peakSeasonRates.dto.PeakSeasonRatesResponseDto;
-import com.example.nginep.peakSeasonRates.entity.DateRange;
-import com.example.nginep.property.entity.PeakSeasonRate;
 import com.example.nginep.propertyFacility.dto.PropertyFacilityResponseDto;
 import com.example.nginep.propertyImages.dto.PropertyImageResponseDto;
 import com.example.nginep.rooms.dto.RoomResponseDto;
