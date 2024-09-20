@@ -1,13 +1,19 @@
 package com.example.nginep.property.entity;
 
-import com.example.nginep.room.entity.Room;
+import com.example.nginep.peakSeasonRates.entity.PeakSeasonRates;
+import com.example.nginep.propertyFacility.entity.PropertyFacility;
+import com.example.nginep.propertyImages.entity.PropertyImage;
+import com.example.nginep.rooms.entity.Room;
 import com.example.nginep.users.entity.Users;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.ColumnDefault;
 
-import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 
@@ -22,81 +28,90 @@ public class Property {
     @Column(name = "id", nullable = false)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "tenant_id")
-    private Users tenant;
-
-    @Column(name = "property_name", nullable = false, length = 100)
+    @NotNull
+    @Column(name = "property_name", nullable = false)
     private String propertyName;
 
-    @Column(name = "category_id")
-    private Integer categoryId;
+    @NotNull
+    @Column(name = "property_category", nullable = false)
+    private String propertyCategory;
 
-    @Column(name = "property_description")
+    @NotNull
+    @Column(name = "property_description", nullable = false)
     private String propertyDescription;
 
-    @Column(name = "place-type", nullable = false, length = 255)
-    private String placeType;
+    @OneToMany(mappedBy = "property", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PropertyFacility> propertyFacilities;
 
-    @Column(name = "property_address", nullable = false, length = 100)
+    @NotNull
+    @Column(name="place-type", nullable = false)
+    private String guestPlaceType;
+
+    @OneToMany(mappedBy = "property", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PropertyImage> propertyImages;
+
+    @NotNull
+    @Column(name = "property_address", nullable = false)
     private String propertyAddress;
 
-    @Column(name = "property_city", nullable = false, length = 100)
+    @NotNull
+    @Column(name = "property_city", nullable = false)
     private String propertyCity;
 
-    @Column(name = "property_province", nullable = false, length = 20)
+    @NotNull
+    @Column(name = "property_province", nullable = false)
     private String propertyProvince;
 
-    @Column(name = "property_postal_code")
+    @NotNull
+    @Column(name = "property_postal_code", nullable = false)
     private String propertyPostalCode;
 
+    @NotNull
     @Column(name = "property_latitude", nullable = false)
-    private String propertyLatitude;
+    private Double propertyLatitude;
 
-    @Column(name = "property_longitude", nullable = false, length = 20)
-    private String propertyLongitude;
+    @NotNull
+    @Column(name = "property_longitude", nullable = false)
+    private Double propertyLongitude;
 
-    @Column(name = "created_at")
+    @OneToMany(mappedBy = "property",cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Room> rooms;
+
+    @OneToMany(mappedBy = "property",cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PeakSeasonRates> peakSeasonRates;
+
+    @JsonIgnore
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "tenant_id", nullable = false)
+    private Users user;
+
+    @NotNull
+    @ColumnDefault("CURRENT_TIMESTAMP")
+    @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 
-    @Column(name = "updated_at")
+    @NotNull
+    @ColumnDefault("CURRENT_TIMESTAMP")
+    @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
     @Column(name = "deleted_at")
     private Instant deletedAt;
 
-    @Column(name = "not_available_from")
-    private Instant notAvailableFrom;
-
-    @Column(name = "not_available_to")
-    private Instant notAvailableTo;
-
-    @Column(name = "peak_season_from")
-    private Instant peakSeasonFrom;
-
-    @Column(name = "peak_season_to")
-    private Instant peakSeasonTo;
-
-    @Column(name = "property_category")
-    private String propertyCategory;
-
-    @Column(name = "increment_type")
-    private String incrementType;
-
-    @Column(name = "amount")
-    private BigDecimal amount;
-
-    @OneToMany(mappedBy = "property")
-    private List<Room> rooms;
-
     @PrePersist
-    protected void onCreate() {
-        createdAt = Instant.now();
-        updatedAt = Instant.now();
+    public void prePersist() {
+        this.createdAt = Instant.now();
+        this.updatedAt = Instant.now();
     }
 
     @PreUpdate
-    protected void onUpdate() {
-        updatedAt = Instant.now();
+    public void preUpdate() {
+        this.updatedAt = Instant.now();
+    }
+
+    @PreRemove
+    public void preRemove() {
+        this.deletedAt = Instant.now();
     }
 }
+

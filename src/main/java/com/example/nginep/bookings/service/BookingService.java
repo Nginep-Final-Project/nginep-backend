@@ -4,6 +4,7 @@ import com.example.nginep.bookings.dto.BookingPaymentDetailsDto;
 import com.example.nginep.bookings.dto.TenantBookingsDto;
 import com.example.nginep.bookings.dto.UserBookingsDto;
 import com.example.nginep.bookings.dto.CreateBookingDto;
+import com.example.nginep.bookings.dto.CreateNotAvailableBookingDTO;
 import com.example.nginep.bookings.entity.Booking;
 import com.example.nginep.bookings.enums.BookingStatus;
 
@@ -12,7 +13,11 @@ import java.util.List;
 public interface BookingService {
     Booking createBooking(CreateBookingDto bookingDTO);
 
+    Booking createNotAvailableBooking(CreateNotAvailableBookingDTO createNotAvailableBookingDTO);
+
     void updateBookingStatus(Long bookingId, BookingStatus status);
+
+    List<Booking> getBookingByRoomId(Long r);
 
     Booking confirmBooking(Long bookingId);
 

@@ -16,13 +16,19 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
-@RequiredArgsConstructor
 public class ReviewReplyServiceImpl implements ReviewReplyService {
 
     private final ReviewReplyRepository reviewReplyRepository;
     private final ReviewService reviewService;
     private final UsersService userService;
     private final ReviewMapper reviewMapper;
+
+    public ReviewReplyServiceImpl(ReviewReplyRepository reviewReplyRepository, ReviewService reviewService, UsersService userService, ReviewMapper reviewMapper) {
+        this.reviewReplyRepository = reviewReplyRepository;
+        this.reviewService = reviewService;
+        this.userService = userService;
+        this.reviewMapper = reviewMapper;
+    }
 
     @Override
     @Transactional

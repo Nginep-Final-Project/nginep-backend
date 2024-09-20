@@ -12,6 +12,7 @@ public class UpdateUsersRequestDto {
     private String email;
     private String password;
     private String profilePicture;
+    private String picturePublicId;
     private Boolean isVerified;
     private LocalDate dateOfBirth;
     private String gender;
@@ -29,6 +30,7 @@ public class UpdateUsersRequestDto {
         user.setEmail(email);
         user.setPassword(password);
         user.setProfilePicture(profilePicture);
+        user.setProfilePicture(picturePublicId);
         user.setIsVerified(isVerified);
         user.setDateOfBirth(dateOfBirth);
         user.setGender(gender);

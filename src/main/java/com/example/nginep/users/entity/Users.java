@@ -1,6 +1,9 @@
 package com.example.nginep.users.entity;
 
+import com.example.nginep.category.entity.Category;
+import com.example.nginep.facility.entity.Facility;
 import com.example.nginep.languages.entity.Languages;
+import com.example.nginep.property.entity.Property;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -44,6 +47,9 @@ public class Users {
     @Column(name = "profile_picture")
     private String profilePicture;
 
+    @Column(name="picture_public_id")
+    private String picturePublicId;
+
     @NotNull
     @Column(name = "is_verified", nullable = false)
     private Boolean isVerified;
@@ -51,6 +57,11 @@ public class Users {
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private Role role;
+
+    @NotNull
+    @Column(name = "account_type", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private AccountType accountType;
 
 
     @Column(name = "date_of_birth")
@@ -84,8 +95,21 @@ public class Users {
     @Column(name = "bank_holder_name")
     private String bankHolderName;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Languages> languages;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Facility> facilities;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Category> categories;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Property> properties;
 
     @NotNull
     @ColumnDefault("CURRENT_TIMESTAMP")
@@ -119,5 +143,10 @@ public class Users {
     public enum Role {
         guest,
         tenant
+    }
+
+    public enum AccountType {
+        email,
+        google
     }
 }

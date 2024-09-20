@@ -1,5 +1,6 @@
 package com.example.nginep.bookings.service.impl;
 
+import com.example.nginep.bookings.dto.CreateNotAvailableBookingDTO;
 import com.example.nginep.bookings.dto.BookingPaymentDetailsDto;
 import com.example.nginep.bookings.dto.TenantBookingsDto;
 import com.example.nginep.bookings.dto.UserBookingsDto;
@@ -15,13 +16,14 @@ import com.example.nginep.payments.entity.Payment;
 import com.example.nginep.payments.enums.PaymentStatus;
 import com.example.nginep.payments.enums.PaymentType;
 import com.example.nginep.payments.service.PaymentService;
-import com.example.nginep.property.entity.Property;
-import com.example.nginep.room.entity.Room;
-import com.example.nginep.room.service.RoomService;
-import com.example.nginep.users.entity.Users;
+import com.example.nginep.rooms.entity.Room;
+import com.example.nginep.rooms.service.RoomService;
 import com.example.nginep.users.service.UsersService;
+import com.example.nginep.property.entity.Property;
+import com.example.nginep.users.entity.Users;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
 import lombok.extern.slf4j.Slf4j;
@@ -34,7 +36,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class BookingServiceImpl implements BookingService {
 
@@ -43,6 +44,14 @@ public class BookingServiceImpl implements BookingService {
     private final PaymentService paymentService;
     private final UsersService userService;
     private final TaskScheduler taskScheduler;
+
+    public BookingServiceImpl(@Lazy BookingRepository bookingRepository, @Lazy RoomService roomService, PaymentService paymentService, UsersService userService, TaskScheduler taskScheduler) {
+        this.bookingRepository = bookingRepository;
+        this.roomService = roomService;
+        this.paymentService = paymentService;
+        this.userService = userService;
+        this.taskScheduler = taskScheduler;
+    }
 
     @Override
     @Transactional
@@ -70,6 +79,11 @@ public class BookingServiceImpl implements BookingService {
         scheduleCancellationTask(savedBooking.getId());
 
         return savedBooking;
+    }
+
+    @Override
+    public Booking createNotAvailableBooking(CreateNotAvailableBookingDTO createNotAvailableBookingDTO) {
+        return bookingRepository.save(createNotAvailableBookingDTO.toEntity());
     }
 
     private void validateBookingDates(CreateBookingDto bookingDTO) {
@@ -115,6 +129,16 @@ public class BookingServiceImpl implements BookingService {
         booking.setStatus(status);
         bookingRepository.save(booking);
     }
+
+    @Override
+    public List<Booking> getBookingByRoomId(Long roomId) {
+        return bookingRepository.findAllByRoomId(roomId);
+    }
+
+//    @Override
+//    public List<Booking> getTenantBookings(Long tenantId, BookingStatus status) {
+//        return bookingRepository.findByTenantIdAndStatus(tenantId, status);
+//    }
 
     @Override
     @Transactional
@@ -212,7 +236,7 @@ public class BookingServiceImpl implements BookingService {
         dto.setCheckOutDate(booking.getCheckOutDate());
         dto.setNumGuests(booking.getNumGuests());
         dto.setStatus(booking.getStatus());
-        dto.setHostName(booking.getRoom().getProperty().getTenant().getFullName());
+        dto.setHostName(booking.getRoom().getProperty().getUser().getFullName());
         dto.setRoomName(booking.getRoom().getName());
         dto.setPropertyName(booking.getRoom().getProperty().getPropertyName());
         dto.setPropertyAddress(booking.getRoom().getProperty().getPropertyAddress());
@@ -258,7 +282,7 @@ public class BookingServiceImpl implements BookingService {
         Payment payment = booking.getPayment();
         Room room = booking.getRoom();
         Property property = room.getProperty();
-        Users tenant = property.getTenant();
+        Users tenant = property.getUser();
 
         BookingPaymentDetailsDto dto = new BookingPaymentDetailsDto();
         dto.setBookingId(booking.getId());

@@ -19,6 +19,7 @@ public class SigninGoogleRequestDto {
         user.setPassword(password);
         user.setPassword(profilePicture);
         user.setRole(Users.Role.valueOf("guest"));
+        user.setAccountType(Users.AccountType.valueOf("google"));
         user.setIsVerified(true);
         return user;
     }

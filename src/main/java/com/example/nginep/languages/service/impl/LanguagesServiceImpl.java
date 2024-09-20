@@ -48,7 +48,6 @@ public class LanguagesServiceImpl implements LanguagesService {
         LangaugesResponseDto response = new LangaugesResponseDto();
         response.setId(language.getId());
         response.setLanguageName(language.getLanguageName());
-        response.setTenantId(language.getUser().getId());
         return response;
     }
 }

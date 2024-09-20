@@ -1,11 +1,13 @@
 package com.example.nginep.auth.service.impl;
 
+import com.example.nginep.auth.dto.ResetPasswordRequestDto;
 import com.example.nginep.auth.helpers.Claims;
 import com.example.nginep.auth.repository.AuthRedisRepository;
 import com.example.nginep.auth.service.AuthService;
 import com.example.nginep.exceptions.applicationException.ApplicationException;
 import com.example.nginep.exceptions.notFoundException.NotFoundException;
 import com.example.nginep.users.dto.VerifyRequestDto;
+import com.example.nginep.users.entity.Users;
 import com.example.nginep.users.repository.UsersRepository;
 import lombok.extern.java.Log;
 import org.springframework.security.core.Authentication;
@@ -95,6 +97,14 @@ public class AuthServiceImpl implements AuthService {
         }
         authRedisRepository.deleteVerificationKey(verifyRequestDto.getEmail());
         return true;
+    }
+
+    @Override
+    public String resetPassword(ResetPasswordRequestDto resetPasswordRequestDto) {
+        Users newUserData = usersRepository.findByEmail(resetPasswordRequestDto.getEmail()).orElseThrow(() -> new NotFoundException("User not found"));
+        newUserData.setPassword(passwordEncoder.encode(resetPasswordRequestDto.getNewPassword()));
+        usersRepository.save(newUserData);
+        return "Reset password success. Please try to login again";
     }
 
 
