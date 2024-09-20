@@ -1,5 +1,6 @@
 package com.example.nginep.property.entity;
 
+import com.example.nginep.peakSeasonRates.entity.PeakSeasonRates;
 import com.example.nginep.propertyFacility.entity.PropertyFacility;
 import com.example.nginep.propertyImages.entity.PropertyImage;
 import com.example.nginep.rooms.entity.Room;
@@ -77,7 +78,7 @@ public class Property {
     private List<Room> rooms;
 
     @OneToMany(mappedBy = "property",cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<PeakSeasonRate> peakSeasonRates;
+    private List<PeakSeasonRates> peakSeasonRates;
 
     @JsonIgnore
     @ManyToOne(fetch = FetchType.EAGER)

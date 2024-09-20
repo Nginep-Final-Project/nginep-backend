@@ -14,6 +14,7 @@ import com.example.nginep.exceptions.notFoundException.NotFoundException;
 import com.example.nginep.users.service.UsersService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -22,11 +23,18 @@ import java.util.List;
 
 @Service
 @Slf4j
-@RequiredArgsConstructor
+
 public class RoomServiceImpl implements RoomService {
     private final RoomRepository roomRepository;
     private final PropertyService propertyService;
     private final BookingService bookingService;
+
+    public RoomServiceImpl(@Lazy RoomRepository roomRepository,@Lazy PropertyService propertyService,@Lazy BookingService bookingService) {
+        this.roomRepository = roomRepository;
+        this.propertyService = propertyService;
+        this.bookingService = bookingService;
+    }
+
 
     @Override
     public Room getRoomById(Long id) {

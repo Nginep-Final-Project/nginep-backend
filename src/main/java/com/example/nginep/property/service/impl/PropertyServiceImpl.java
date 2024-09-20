@@ -34,7 +34,7 @@ public class PropertyServiceImpl implements PropertyService {
 
     public PropertyServiceImpl(PropertyRepository propertyRepository, UsersService usersService,
                                @Lazy PropertyFacilityService propertyFacilityService, @Lazy PropertyImageService propertyImageService,
-                               @Lazy RoomService roomService, PeakSeasonRatesService peakSeasonRatesService) {
+                               @Lazy RoomService roomService, @Lazy PeakSeasonRatesService peakSeasonRatesService) {
         this.propertyRepository = propertyRepository;
         this.propertyFacilityService = propertyFacilityService;
         this.propertyImageService = propertyImageService;

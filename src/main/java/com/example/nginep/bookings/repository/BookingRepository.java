@@ -22,7 +22,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     @Query("SELECT b FROM Booking b " +
             "JOIN b.room r " +
             "JOIN r.property p " +
-            "WHERE p.tenant.id = :tenantId")
+            "WHERE p.user.id = :tenantId")
     List<Booking> findByTenant(@Param("tenantId") Long tenantId);
 
     Optional<Booking> findByUserAndRoomAndStatus(Users user, Room room, BookingStatus status);
