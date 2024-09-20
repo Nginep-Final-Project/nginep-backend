@@ -1,6 +1,7 @@
 package com.example.nginep.bookings.service.impl;
 
 import com.example.nginep.bookings.dto.CreateBookingDTO;
+import com.example.nginep.bookings.dto.CreateNotAvailableBookingDTO;
 import com.example.nginep.bookings.entity.Booking;
 import com.example.nginep.bookings.enums.BookingStatus;
 import com.example.nginep.bookings.repository.BookingRepository;
@@ -51,6 +52,11 @@ public class BookingServiceImpl implements BookingService {
         booking.setFinalPrice(finalPrice);
 
         return bookingRepository.save(booking);
+    }
+
+    @Override
+    public Booking createNotAvailableBooking(CreateNotAvailableBookingDTO createNotAvailableBookingDTO) {
+        return bookingRepository.save(createNotAvailableBookingDTO.toEntity());
     }
 
     private void validateBookingDates(CreateBookingDTO bookingDTO) {

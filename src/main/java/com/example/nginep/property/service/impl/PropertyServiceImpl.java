@@ -18,6 +18,8 @@ import lombok.extern.java.Log;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @Log
 public class PropertyServiceImpl implements PropertyService {
@@ -87,6 +89,11 @@ public class PropertyServiceImpl implements PropertyService {
         property.setPeakSeasonRate(propertyRequestDto.getPeakSeasonRate());
         Property editedProperty = propertyRepository.save(property);
         return mapToPropertyResponseDto(editedProperty);
+    }
+
+    @Override
+    public List<PropertyResponseDto> GetPropertyByTenantId(Long tenantId) {
+        return propertyRepository.findAllByUserId(tenantId).stream().map(this::mapToPropertyResponseDto).toList();
     }
 
     @Override

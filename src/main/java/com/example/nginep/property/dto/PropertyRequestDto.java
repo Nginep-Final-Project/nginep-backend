@@ -1,6 +1,7 @@
 package com.example.nginep.property.dto;
 
-import com.example.nginep.property.entity.DateRange;
+import com.example.nginep.peakSeasonRates.dto.PeakSeasonRatesRequestDto;
+import com.example.nginep.peakSeasonRates.entity.DateRange;
 import com.example.nginep.property.entity.PeakSeasonRate;
 import com.example.nginep.property.entity.Property;
 import com.example.nginep.propertyImages.dto.PropertyImageRequestDto;
@@ -28,7 +29,7 @@ public class PropertyRequestDto {
     private DateRange notAvailabilityDates;
     private DateRange peakSeasonDates;
     private List<RoomRequestDto> rooms;
-    private PeakSeasonRate peakSeasonRate;
+    private List<PeakSeasonRatesRequestDto> peakSeasonRates;
     private Long tenantId;
 
     public Property toEntity(Users user){
@@ -43,9 +44,6 @@ public class PropertyRequestDto {
         newProperty.setPropertyPostalCode(propertyPostalCode);
         newProperty.setPropertyLatitude(propertyLatitude);
         newProperty.setPropertyLongitude(propertyLongitude);
-        newProperty.setNotAvailabilityDates(notAvailabilityDates);
-        newProperty.setPeakSeasonDates(peakSeasonDates);
-        newProperty.setPeakSeasonRate(peakSeasonRate);
         newProperty.setUser(user);
         return newProperty;
     }

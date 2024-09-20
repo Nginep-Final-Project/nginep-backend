@@ -1,5 +1,6 @@
 package com.example.nginep.rooms.entity;
 
+import com.example.nginep.bookings.entity.Booking;
 import com.example.nginep.property.entity.Property;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
@@ -10,6 +11,7 @@ import org.hibernate.annotations.ColumnDefault;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.List;
 
 @Data
 @Entity
@@ -36,12 +38,17 @@ public class Room {
     private String description;
 
     @NotNull
-    @Min(value = 1)
     @Column(name = "max_guests", nullable = false)
     private Integer maxGuests;
 
     @Column(name = "base_price", nullable = false, precision = 10, scale = 2)
     private BigDecimal basePrice;
+
+    @Column(name = "total_room")
+    private Integer totalRoom;
+
+    @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Booking> bookings;
 
     @NotNull
     @ColumnDefault("CURRENT_TIMESTAMP")

@@ -1,6 +1,10 @@
 package com.example.nginep.bookings.entity;
 
 import com.example.nginep.bookings.enums.BookingStatus;
+import com.example.nginep.payments.entity.Payment;
+import com.example.nginep.rooms.entity.Room;
+import com.example.nginep.users.entity.Users;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -19,19 +23,15 @@ public class Booking {
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "user_id", nullable = false)
-    private Long userId;
+    @JsonIgnore
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private Users user;
 
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "user_id", insertable = false, updatable = false)
-//    private Users user;
-
-    @Column(name = "room_id", nullable = false)
-    private Long roomId;
-
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "room_id", insertable = false, updatable = false)
-//    private Room room;
+    @JsonIgnore
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "room_id", nullable = false)
+    private Room room;
 
     @Column(name = "check_in_date", nullable = false)
     private LocalDate checkInDate;
@@ -51,6 +51,14 @@ public class Booking {
 
     @Column(name = "user_message")
     private String userMessage;
+
+    @JsonIgnore
+    @OneToOne(mappedBy = "booking", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Payment payment;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Review> reviews;
 
     @Column(name = "created_at")
     private Instant createdAt;

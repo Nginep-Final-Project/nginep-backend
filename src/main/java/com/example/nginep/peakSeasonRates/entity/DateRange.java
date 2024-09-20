@@ -1,4 +1,4 @@
-package com.example.nginep.property.entity;
+package com.example.nginep.peakSeasonRates.entity;
 
 import jakarta.persistence.Embeddable;
 import lombok.Data;
