@@ -33,7 +33,7 @@ public class PeakSeasonRatesController {
         return Response.successResponse("Edit peak season rates success", peakSeasonRatesService.editPeakSeasonRates(peakSeasonRatesRequestDto));
     }
 
-    @GetMapping("/{propertyId}")
+    @GetMapping("/property/{propertyId}")
     public ResponseEntity<Response<List<PeakSeasonRatesResponseDto>>> getPeakSeasonRatesByPropertyId(@PathVariable Long propertyId) {
         return Response.successResponse("Get peak season rates by property id success", peakSeasonRatesService.getPeakSeasonRatesByPropertyId(propertyId));
     }

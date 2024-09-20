@@ -68,6 +68,8 @@ public class PropertyServiceImpl implements PropertyService {
             newPropertyRoom.setDescription(roomRequestDto.getDescription());
             newPropertyRoom.setBasePrice(roomRequestDto.getBasePrice());
             newPropertyRoom.setMaxGuests(roomRequestDto.getMaxGuests());
+            newPropertyRoom.setTotalRoom(roomRequestDto.getTotalRoom());
+            newPropertyRoom.setNotAvailableDates(roomRequestDto.getNotAvailableDates());
             newPropertyRoom.setPropertyId(newProperty.getId());
             roomService.createRoom(newPropertyRoom);
         }
