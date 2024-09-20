@@ -6,7 +6,7 @@ import lombok.Data;
 import java.time.LocalDate;
 
 @Data
-public class CreateBookingDTO {
+public class CreateBookingDto {
     private Long roomId;
     private Long userId;
     private LocalDate checkInDate;

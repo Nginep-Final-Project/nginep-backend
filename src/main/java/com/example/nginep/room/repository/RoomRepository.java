@@ -1,6 +1,6 @@
-package com.example.nginep.rooms.repository;
+package com.example.nginep.room.repository;
 
-import com.example.nginep.rooms.entity.Room;
+import com.example.nginep.room.entity.Room;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

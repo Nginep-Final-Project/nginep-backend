@@ -1,25 +1,34 @@
-package com.example.nginep.rooms.entity;
+package com.example.nginep.room.entity;
 
+import com.example.nginep.bookings.entity.Booking;
+import com.example.nginep.property.entity.Property;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.List;
 
-@Data
 @Entity
 @Table(name = "rooms")
+@NoArgsConstructor
+@Getter
+@Setter
 public class Room {
-
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "rooms_id_gen")
-    @SequenceGenerator(name = "rooms_id_gen", sequenceName = "rooms_id_seq", allocationSize = 1)
-    @Column(name = "id")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false)
     private Long id;
 
-    @Column(name = "property_id")
-    private Long propertyId;
+    @JsonIgnore
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "property_id")
+    private Property property;
 
-    @Column(name = "name", nullable = false)
+    @Column(name = "name", nullable = false, length = 100)
     private String name;
 
     @Column(name = "description")
@@ -36,6 +45,13 @@ public class Room {
 
     @Column(name = "updated_at")
     private Instant updatedAt;
+
+    @Column(name = "deleted_at")
+    private Instant deletedAt;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "room")
+    private List<Booking> bookings;
 
     @PrePersist
     protected void onCreate() {

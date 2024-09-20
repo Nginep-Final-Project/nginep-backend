@@ -1,7 +1,9 @@
 package com.example.nginep.payments.entity;
 
+import com.example.nginep.bookings.entity.Booking;
 import com.example.nginep.payments.enums.PaymentStatus;
 import com.example.nginep.payments.enums.PaymentType;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -19,8 +21,10 @@ public class Payment {
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "booking_id")
-    private Long bookingId;
+    @JsonIgnore
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "booking_id", nullable = false)
+    private Booking booking;
 
     @Column(name = "amount", nullable = false, precision = 10, scale = 2)
     private BigDecimal amount;
@@ -41,6 +45,21 @@ public class Payment {
 
     @Column(name = "attempts")
     private int attempts = 0;
+
+    @Column(name = "specific_payment_type")
+    private String specificPaymentType;
+
+    @Column(name = "va_number")
+    private String vaNumber;
+
+    @Column(name = "bill_key")
+    private String billKey;
+
+    @Column(name = "biller_code")
+    private String billerCode;
+
+    @Column(name = "qris_url")
+    private String qrisUrl;
 
     @Column(name = "paid_at")
     private Instant paidAt;
