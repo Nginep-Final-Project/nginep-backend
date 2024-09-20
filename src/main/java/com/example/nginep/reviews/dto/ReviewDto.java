@@ -19,4 +19,5 @@ public class ReviewDto {
     private String comment;
     private Double averageRating;
     private Instant createdAt;
+    private ReviewReplyDto reply;
 }

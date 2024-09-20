@@ -3,6 +3,7 @@ package com.example.nginep.reviews.entity;
 import com.example.nginep.bookings.entity.Booking;
 import com.example.nginep.property.entity.Property;
 import com.example.nginep.users.entity.Users;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -19,14 +20,17 @@ public class Review {
     @Column(name = "id")
     private Long id;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "booking_id", nullable = false)
     private Booking booking;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private Users user;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "property_id", nullable = false)
     private Property property;
@@ -51,6 +55,10 @@ public class Review {
 
     @Column(name = "comment", nullable = false, columnDefinition = "TEXT")
     private String comment;
+
+    @JsonIgnore
+    @OneToOne(mappedBy = "review", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private ReviewReply reviewReply;
 
     @Column(name = "created_at")
     private Instant createdAt;
