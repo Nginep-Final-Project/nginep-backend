@@ -2,10 +2,13 @@ package com.example.nginep.reviews.service.impl;
 
 import com.example.nginep.bookings.entity.Booking;
 import com.example.nginep.bookings.service.BookingService;
+import com.example.nginep.exceptions.notFoundException.NotFoundException;
 import com.example.nginep.reviews.dto.CreateReviewDto;
 import com.example.nginep.reviews.dto.PropertyReviewSummaryDto;
 import com.example.nginep.reviews.dto.ReviewDto;
 import com.example.nginep.reviews.entity.Review;
+import com.example.nginep.reviews.entity.ReviewReply;
+import com.example.nginep.reviews.mapper.ReviewMapper;
 import com.example.nginep.reviews.repository.ReviewRepository;
 import com.example.nginep.reviews.service.ReviewService;
 import jakarta.transaction.Transactional;
@@ -17,11 +20,17 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 public class ReviewServiceImpl implements ReviewService {
 
     private final ReviewRepository reviewRepository;
     private final BookingService bookingService;
+    private final ReviewMapper reviewMapper;
+
+    public ReviewServiceImpl(ReviewRepository reviewRepository, BookingService bookingService, ReviewMapper reviewMapper) {
+        this.reviewRepository = reviewRepository;
+        this.bookingService = bookingService;
+        this.reviewMapper = reviewMapper;
+    }
 
     @Override
     public PropertyReviewSummaryDto getPropertyReviewSummary(Long propertyId) {
@@ -49,7 +58,9 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     public List<ReviewDto> getTopReviewsByPropertyId(Long propertyId, int limit) {
         List<Review> topReviews = reviewRepository.findTopReviewsByPropertyId(propertyId, PageRequest.of(0, limit));
-        return topReviews.stream().map(this::mapToReviewDto).collect(Collectors.toList());
+        return topReviews.stream()
+                .map(reviewMapper::mapToReviewDto)
+                .toList();
     }
 
 
@@ -71,33 +82,20 @@ public class ReviewServiceImpl implements ReviewService {
         review.setComment(createReviewDto.getComment());
 
         Review savedReview = reviewRepository.save(review);
-        return mapToReviewDto(savedReview);
+        return reviewMapper.mapToReviewDto(savedReview);
     }
 
     @Override
     public List<ReviewDto> getUserReviews(Long userId) {
         List<Review> userReviews = reviewRepository.findByUserId(userId);
-        return userReviews.stream().map(this::mapToReviewDto).collect(Collectors.toList());
+        return userReviews.stream()
+                .map(reviewMapper::mapToReviewDto)
+                .toList();
     }
 
-    private ReviewDto mapToReviewDto(Review review) {
-        ReviewDto dto = new ReviewDto();
-        dto.setId(review.getId());
-        dto.setBookingId(review.getBooking().getId());
-        dto.setPropertyName(review.getProperty().getPropertyName());
-        dto.setFullName(review.getUser().getFullName());
-        dto.setCleanlinessRating(review.getCleanlinessRating());
-        dto.setCommunicationRating(review.getCommunicationRating());
-        dto.setCheckInRating(review.getCheckInRating());
-        dto.setAccuracyRating(review.getAccuracyRating());
-        dto.setLocationRating(review.getLocationRating());
-        dto.setValueRating(review.getValueRating());
-        dto.setComment(review.getComment());
-        dto.setCreatedAt(review.getCreatedAt());
-        dto.setAverageRating((review.getCleanlinessRating() + review.getCommunicationRating() +
-                review.getCheckInRating() + review.getAccuracyRating() +
-                review.getLocationRating() + review.getValueRating()) / 6.0);
-        return dto;
+    @Override
+    public Review findReviewById(Long reviewId) {
+        return reviewRepository.findById(reviewId).orElseThrow(() -> new NotFoundException("Review not found with id: " + reviewId));
     }
 
 }
