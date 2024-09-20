@@ -189,6 +189,21 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
+    public Booking editNotAvailableBooking(CreateNotAvailableBookingDTO createNotAvailableBookingDTO) {
+        Booking booking = bookingRepository.findById(createNotAvailableBookingDTO.getId()).orElseThrow(()->new NotFoundException("Booking with id: " + createNotAvailableBookingDTO.getId() + " not found"));
+        booking.setCheckInDate(createNotAvailableBookingDTO.getCheckInDate());
+        booking.setCheckOutDate(createNotAvailableBookingDTO.getCheckOutDate());
+        return bookingRepository.save(booking);
+    }
+
+    @Override
+    public String deleteNotAvailableBooking(Long bookingId) {
+        bookingRepository.findById(bookingId).orElseThrow(()->new NotFoundException("Booking with id: " + bookingId + " not found"));
+        bookingRepository.deleteById(bookingId);
+        return "Delete Booking with id " + bookingId + " success";
+    }
+
+    @Override
     @Transactional
     public Booking updateBookingStatusMidtrans(String orderId, String transactionStatus, String fraudStatus) {
         Booking booking = findBookingById(Long.valueOf(orderId));

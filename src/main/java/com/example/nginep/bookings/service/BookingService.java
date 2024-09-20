@@ -17,7 +17,7 @@ public interface BookingService {
 
     void updateBookingStatus(Long bookingId, BookingStatus status);
 
-    List<Booking> getBookingByRoomId(Long r);
+    List<Booking> getBookingByRoomId(Long roomId);
 
     Booking confirmBooking(Long bookingId);
 
@@ -39,4 +39,7 @@ public interface BookingService {
 
     Booking findBookingById(Long bookingId);
 
+    Booking editNotAvailableBooking(CreateNotAvailableBookingDTO createNotAvailableBookingDTO);
+
+    String deleteNotAvailableBooking(Long bookingId);
 }

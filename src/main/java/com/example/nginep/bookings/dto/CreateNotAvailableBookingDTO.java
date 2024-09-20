@@ -11,6 +11,7 @@ import java.time.LocalDate;
 
 @Data
 public class CreateNotAvailableBookingDTO {
+    private Long id;
     private Users user;
     private Room room;
     private LocalDate checkInDate;
