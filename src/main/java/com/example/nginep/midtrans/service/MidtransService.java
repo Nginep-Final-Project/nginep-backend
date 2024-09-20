@@ -69,6 +69,9 @@ public class MidtransService {
                             "bill_info2", "Midtrans"
                     ));
                     break;
+                case "e-wallet/qris":
+                    params.put("payment_type", "gopay");
+                    break;
                 default:
                     throw new ApplicationException("Unsupported bank: " + bank);
             }

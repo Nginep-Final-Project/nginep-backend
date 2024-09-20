@@ -20,6 +20,7 @@ public class SignupRequestDto {
         user.setEmail(email);
         user.setPassword(password);
         user.setRole(role);
+        user.setAccountType(Users.AccountType.valueOf("email"));
         return user;
     }
 }

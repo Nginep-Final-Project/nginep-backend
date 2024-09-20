@@ -33,7 +33,7 @@ public class LanguagesController {
     }
 
     @DeleteMapping("/{languageId}")
-    public ResponseEntity<Response<String>> createLanguage(@PathVariable Long languageId) {
+    public ResponseEntity<Response<String>> deleteLanguage(@PathVariable Long languageId) {
         return Response.successResponse("Delete language success", languagesService.deleteLanguage(languageId));
     }
 }

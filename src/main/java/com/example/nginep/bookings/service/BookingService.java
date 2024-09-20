@@ -1,23 +1,42 @@
 package com.example.nginep.bookings.service;
 
-import com.example.nginep.bookings.dto.CreateBookingDTO;
+import com.example.nginep.bookings.dto.BookingPaymentDetailsDto;
+import com.example.nginep.bookings.dto.TenantBookingsDto;
+import com.example.nginep.bookings.dto.UserBookingsDto;
+import com.example.nginep.bookings.dto.CreateBookingDto;
+import com.example.nginep.bookings.dto.CreateNotAvailableBookingDTO;
 import com.example.nginep.bookings.entity.Booking;
 import com.example.nginep.bookings.enums.BookingStatus;
 
 import java.util.List;
 
 public interface BookingService {
-    Booking createBooking(CreateBookingDTO bookingDTO);
+    Booking createBooking(CreateBookingDto bookingDTO);
+
+    Booking createNotAvailableBooking(CreateNotAvailableBookingDTO createNotAvailableBookingDTO);
 
     void updateBookingStatus(Long bookingId, BookingStatus status);
 
-//    List<Booking> getTenantBookings(Long tenantId, BookingStatus status);
+    List<Booking> getBookingByRoomId(Long r);
 
     Booking confirmBooking(Long bookingId);
 
-    Booking cancelBookingByTenant(Long bookingId);
+    void cancelBookingByTenant(Long bookingId);
 
-    Booking cancelBookingByUser(Long bookingId);
+    void cancelBookingByUser(Long bookingId);
 
     Booking updateBookingStatusMidtrans(String orderId, String transactionStatus, String fraudStatus);
+
+    List<UserBookingsDto> getUserBookings(Long userId);
+
+    List<TenantBookingsDto> getTenantBookings(Long tenantId);
+
+    BookingPaymentDetailsDto getBookingPaymentDetails(Long bookingId);
+
+    Long checkExistingPendingBooking(Long userId, Long roomId);
+
+    void cancelBookingIfPending(Long bookingId);
+
+    Booking findBookingById(Long bookingId);
+
 }

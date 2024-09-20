@@ -21,20 +21,20 @@ public class PaymentController {
     private final PaymentService paymentService;
     private final BookingPaymentOrchestrator bookingPaymentOrchestrator;
 
-    @PostMapping(value = "/upload-proof", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PatchMapping(value = "/upload-proof", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Response<Payment>> uploadProofOfPayment(
             @ModelAttribute @Valid UploadProofOfPaymentDto uploadProofOfPaymentDTO) {
         Payment updatedPayment = paymentService.uploadProofOfPayment(uploadProofOfPaymentDTO);
         return Response.successResponse("Proof of payment uploaded successfully", updatedPayment);
     }
 
-    @PostMapping("/{paymentId}/confirm-manual")
+    @PatchMapping("/{paymentId}/confirm-manual")
     public ResponseEntity<Response<Payment>> confirmManualPayment(@PathVariable Long paymentId) {
         Payment confirmedPayment = paymentService.confirmManualPayment(paymentId);
         return Response.successResponse("Manual payment confirmed successfully", confirmedPayment);
     }
 
-    @PostMapping("/{paymentId}/reject")
+    @PatchMapping("/{paymentId}/reject")
     public ResponseEntity<Response<Object>> rejectPayment(@PathVariable Long paymentId) {
         bookingPaymentOrchestrator.rejectPayment(paymentId);
         return Response.successResponse("Payment rejected successfully");
