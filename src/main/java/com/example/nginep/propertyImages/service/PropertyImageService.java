@@ -9,6 +9,8 @@ import java.util.List;
 public interface PropertyImageService {
     PropertyImageResponseDto createPropertyImage(PropertyImageRequestDto propertyImageRequestDto);
 
+    String setThumbnailImage(PropertyImageRequestDto propertyImageRequestDto);
+
     List<PropertyImageResponseDto> getPropertyImageByPropertyId(Long propertyId);
 
     String deletePropertyImage(Long propertyImageId);

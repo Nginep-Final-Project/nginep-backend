@@ -135,11 +135,6 @@ public class BookingServiceImpl implements BookingService {
         return bookingRepository.findAllByRoomId(roomId);
     }
 
-//    @Override
-//    public List<Booking> getTenantBookings(Long tenantId, BookingStatus status) {
-//        return bookingRepository.findByTenantIdAndStatus(tenantId, status);
-//    }
-
     @Override
     @Transactional
     public Booking confirmBooking(Long bookingId) {

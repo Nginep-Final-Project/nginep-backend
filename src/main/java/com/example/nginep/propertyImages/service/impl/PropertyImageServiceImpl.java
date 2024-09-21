@@ -8,8 +8,6 @@ import com.example.nginep.propertyImages.dto.PropertyImageResponseDto;
 import com.example.nginep.propertyImages.entity.PropertyImage;
 import com.example.nginep.propertyImages.repository.PropertyImageRepository;
 import com.example.nginep.propertyImages.service.PropertyImageService;
-import com.example.nginep.users.entity.Users;
-import com.example.nginep.users.service.UsersService;
 import lombok.extern.java.Log;
 import org.springframework.stereotype.Service;
 
@@ -21,7 +19,7 @@ public class PropertyImageServiceImpl implements PropertyImageService {
     private final PropertyImageRepository propertyImageRepository;
     private final PropertyService propertyService;
 
-    public PropertyImageServiceImpl(PropertyImageRepository propertyImageRepository, PropertyService propertyService){
+    public PropertyImageServiceImpl(PropertyImageRepository propertyImageRepository, PropertyService propertyService) {
         this.propertyImageRepository = propertyImageRepository;
         this.propertyService = propertyService;
     }
@@ -31,6 +29,25 @@ public class PropertyImageServiceImpl implements PropertyImageService {
         Property property = propertyService.getPropertyById(propertyImageRequestDto.getPropertyId());
         PropertyImage newPropertyImage = propertyImageRepository.save(propertyImageRequestDto.toEntity(property));
         return mapToPropertyImageResponseDto(newPropertyImage);
+    }
+
+    @Override
+    public String setThumbnailImage(PropertyImageRequestDto propertyImageRequestDto) {
+        List<PropertyImage> propertyImages = propertyImageRepository.findAllByPropertyId(propertyImageRequestDto.getPropertyId());
+
+        boolean publicKeyExists = propertyImages.stream()
+                .anyMatch(image -> image.getPublicKey().equals(propertyImageRequestDto.getPublicKey()));
+
+        if (!publicKeyExists) {
+            throw new NotFoundException("PublicKey " + propertyImageRequestDto.getPublicKey() + " does not exist for property with id: " + propertyImageRequestDto.getPropertyId());
+        }
+
+        for (PropertyImage image : propertyImages) {
+            image.setIsThumbnail(image.getPublicKey().equals(propertyImageRequestDto.getPublicKey()));
+            propertyImageRepository.save(image);
+        }
+
+        return "Update thumbnail success";
     }
 
     @Override
