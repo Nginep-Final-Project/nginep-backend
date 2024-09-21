@@ -113,6 +113,12 @@ public class PropertyServiceImpl implements PropertyService {
     }
 
     @Override
+    public PropertyResponseDto getDetailProperty(Long propertyId) {
+        Property property = getPropertyById(propertyId);
+        return mapToPropertyResponseDto(property);
+    }
+
+    @Override
     public String deleteProperty(Long propertyId) {
         propertyRepository.findById(propertyId).orElseThrow(()->new NotFoundException("Property with id: " + propertyId + " not found"));
         propertyRepository.deleteById(propertyId);

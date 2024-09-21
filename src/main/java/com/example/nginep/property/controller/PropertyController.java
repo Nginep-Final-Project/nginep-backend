@@ -32,8 +32,8 @@ public class PropertyController {
     }
 
     @GetMapping("/{propertyId}")
-    public ResponseEntity<Response<Property>> getDetailProperty(@PathVariable Long propertyId) {
-        return Response.successResponse("Get detail property success", propertyService.getPropertyById(propertyId));
+    public ResponseEntity<Response<PropertyResponseDto>> getDetailProperty(@PathVariable Long propertyId) {
+        return Response.successResponse("Get detail property success", propertyService.getDetailProperty(propertyId));
     }
 
     @DeleteMapping("/{propertyId}")

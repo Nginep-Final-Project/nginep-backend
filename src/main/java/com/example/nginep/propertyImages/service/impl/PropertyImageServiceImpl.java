@@ -52,7 +52,8 @@ public class PropertyImageServiceImpl implements PropertyImageService {
 
     @Override
     public List<PropertyImageResponseDto> getPropertyImageByPropertyId(Long propertyId) {
-        return propertyImageRepository.findAllByPropertyId(propertyId).stream().map(this::mapToPropertyImageResponseDto).toList();
+        List<PropertyImage> propertyImages = propertyImageRepository.findAllByPropertyId(propertyId);
+        return sortImagesByThumbnail(propertyImages).stream().map(this::mapToPropertyImageResponseDto).toList();
     }
 
     @Override
@@ -60,6 +61,30 @@ public class PropertyImageServiceImpl implements PropertyImageService {
         propertyImageRepository.findById(propertyImageId).orElseThrow(() -> new NotFoundException("Property image with id: " + propertyImageId + " not found"));
         propertyImageRepository.deleteById(propertyImageId);
         return "Property image with id: " + propertyImageId + " has deleted successfully";
+    }
+
+    public List<PropertyImage> sortImagesByThumbnail(List<PropertyImage> images) {
+        if (images == null || images.size() <= 1) {
+            return images;
+        }
+
+        PropertyImage thumbnail = null;
+        int thumbnailIndex = -1;
+        for (int i = 0; i < images.size(); i++) {
+            if (images.get(i).getIsThumbnail()) {
+                thumbnail = images.get(i);
+                thumbnailIndex = i;
+                break;
+            }
+        }
+
+        if (thumbnail != null && thumbnailIndex != 0) {
+            images.remove(thumbnailIndex);
+            images.addFirst(thumbnail);
+        }
+
+        log.info(images.toString());
+        return images;
     }
 
     public PropertyImageResponseDto mapToPropertyImageResponseDto(PropertyImage propertyImage) {
