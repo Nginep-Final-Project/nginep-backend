@@ -1,25 +1,35 @@
 package com.example.nginep.property.service.impl;
 
+import com.example.nginep.category.dto.CategoryResponseDto;
+import com.example.nginep.category.repository.CategoryRepository;
+import com.example.nginep.category.service.CategoryService;
 import com.example.nginep.exceptions.notFoundException.NotFoundException;
 import com.example.nginep.peakSeasonRates.dto.PeakSeasonRatesRequestDto;
 import com.example.nginep.peakSeasonRates.service.PeakSeasonRatesService;
-import com.example.nginep.property.dto.PropertyRequestDto;
-import com.example.nginep.property.dto.PropertyResponseDto;
+import com.example.nginep.property.dto.*;
 import com.example.nginep.property.entity.Property;
 import com.example.nginep.property.repository.PropertyRepository;
+import com.example.nginep.property.repository.PropertySpecification;
 import com.example.nginep.property.service.PropertyService;
 import com.example.nginep.propertyFacility.dto.PropertyFacilityRequestDto;
 import com.example.nginep.propertyFacility.service.PropertyFacilityService;
 import com.example.nginep.propertyImages.dto.PropertyImageRequestDto;
 import com.example.nginep.propertyImages.service.PropertyImageService;
+import com.example.nginep.reviews.service.ReviewService;
 import com.example.nginep.rooms.dto.RoomRequestDto;
 import com.example.nginep.rooms.service.RoomService;
 import com.example.nginep.users.entity.Users;
 import com.example.nginep.users.service.UsersService;
 import lombok.extern.java.Log;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -31,16 +41,21 @@ public class PropertyServiceImpl implements PropertyService {
     private final RoomService roomService;
     private final UsersService usersService;
     private final PeakSeasonRatesService peakSeasonRatesService;
+    private final ReviewService reviewService;
+    private final CategoryService categoryService;
 
     public PropertyServiceImpl(PropertyRepository propertyRepository, UsersService usersService,
                                @Lazy PropertyFacilityService propertyFacilityService, @Lazy PropertyImageService propertyImageService,
-                               @Lazy RoomService roomService, @Lazy PeakSeasonRatesService peakSeasonRatesService) {
+                               @Lazy RoomService roomService, @Lazy PeakSeasonRatesService peakSeasonRatesService,
+                               ReviewService reviewService, CategoryService categoryService) {
         this.propertyRepository = propertyRepository;
         this.propertyFacilityService = propertyFacilityService;
         this.propertyImageService = propertyImageService;
         this.roomService = roomService;
         this.usersService = usersService;
         this.peakSeasonRatesService = peakSeasonRatesService;
+        this.reviewService = reviewService;
+        this.categoryService = categoryService;
     }
 
 
@@ -108,6 +123,41 @@ public class PropertyServiceImpl implements PropertyService {
     }
 
     @Override
+    public Page<SearchResponseDto> getAllProperty(Pageable pageable, String propertyName, String propertyCategory, String propertyCity, LocalDate checkInDate, LocalDate checkOutDate, Integer totalGuests) {
+        Specification<Property> specification = Specification.where(PropertySpecification.byPropertyName(propertyName))
+                .and(PropertySpecification.byPropertyCategory(propertyCategory))
+                .and(PropertySpecification.byPropertyCity(propertyCity))
+                .and(PropertySpecification.byAvailableWithinDates(checkInDate, checkOutDate))
+                .and(PropertySpecification.byTotalGuests(totalGuests));
+
+        return propertyRepository.findAll(specification, pageable).map(this::mapToSearchResponseDto);
+    }
+
+    @Override
+    public List<PropertyCitiesResponseDto> getAllCities() {
+        List<String> cities = propertyRepository.findDistinctCities();
+        List<PropertyCitiesResponseDto> convertedCities = new ArrayList<>();
+        for (String city : cities) {
+            PropertyCitiesResponseDto convert = new PropertyCitiesResponseDto();
+            convert.setLabel(city);
+            convert.setValue(city.trim().toLowerCase().replace(" ", "-"));
+            convertedCities.add(convert);
+        }
+        return convertedCities;
+    }
+
+    @Override
+    public HomeResponseDto getHomeData() {
+        List<CategoryResponseDto> categories = categoryService.getAllCategory();
+        Pageable pageable = PageRequest.of(0, 12);
+        HomeResponseDto homeResponse = new HomeResponseDto();
+        homeResponse.setCategories(categories);
+        homeResponse.setCities(getAllCities());
+        homeResponse.setProperties(getAllProperty(pageable,null,null,null,null,null,null));
+        return homeResponse;
+    }
+
+    @Override
     public Property getPropertyById(Long propertyId) {
         return propertyRepository.findById(propertyId).orElseThrow(() -> new NotFoundException("Property with id: " + propertyId + " not found"));
     }
@@ -143,6 +193,20 @@ public class PropertyServiceImpl implements PropertyService {
         response.setRooms(roomService.getRoomByPropertyId(property.getId()));
         response.setPeakSeasonRate(peakSeasonRatesService.getPeakSeasonRatesByPropertyId(property.getId()));
         response.setTenantId(property.getUser().getId());
+        return response;
+    }
+
+    public SearchResponseDto mapToSearchResponseDto(Property property) {
+        SearchResponseDto response = new SearchResponseDto();
+        response.setId(property.getId());
+        response.setPropertyName(property.getPropertyName());
+        response.setPropertyCategory(property.getPropertyCategory());
+        response.setPropertyImage(propertyImageService.getPropertyImageByPropertyId(property.getId()));
+        response.setPropertyAddress(property.getPropertyAddress());
+        response.setPropertyCity(property.getPropertyCity());
+        response.setPropertyProvince(property.getPropertyProvince());
+        response.setRooms(roomService.getRoomByPropertyId(property.getId()));
+        response.setRating(reviewService.getPropertyReviewSummary(property.getId()).getAverageRating());
         return response;
     }
 }

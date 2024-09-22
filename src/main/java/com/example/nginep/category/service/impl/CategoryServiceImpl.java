@@ -54,6 +54,11 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
+    public List<CategoryResponseDto> getAllCategory() {
+        return categoryRepository.findAllDistinctCategories().stream().map(this::mapToCategoryResponseDto).toList();
+    }
+
+    @Override
     public String deleteCategory(Long categoryId) {
         categoryRepository.findById(categoryId).orElseThrow(()->new NotFoundException("Category with id: " + categoryId + " not found"));
         categoryRepository.deleteById(categoryId);

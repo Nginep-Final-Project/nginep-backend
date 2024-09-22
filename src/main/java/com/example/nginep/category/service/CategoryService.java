@@ -10,5 +10,6 @@ public interface CategoryService {
     CategoryResponseDto createCategory(CategoryRequestDto categoryRequestDto);
     CategoryResponseDto editCategory(CategoryRequestDto categoryRequestDto);
     List<CategoryResponseDto> getCategoryByTenantId();
+    List<CategoryResponseDto> getAllCategory();
     String deleteCategory(Long categoryId);
 }

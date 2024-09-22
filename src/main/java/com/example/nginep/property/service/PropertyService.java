@@ -1,9 +1,11 @@
 package com.example.nginep.property.service;
 
-import com.example.nginep.property.dto.PropertyRequestDto;
-import com.example.nginep.property.dto.PropertyResponseDto;
+import com.example.nginep.property.dto.*;
 import com.example.nginep.property.entity.Property;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public interface PropertyService {
@@ -12,6 +14,12 @@ public interface PropertyService {
     PropertyResponseDto updateProperty(PropertyRequestDto propertyRequestDto);
 
     List<PropertyResponseDto> GetPropertyByTenantId(Long tenantId);
+
+    Page<SearchResponseDto> getAllProperty(Pageable pageable, String propertyName, String propertyCategory, String propertyCity, LocalDate checkInDate, LocalDate checkOutDate, Integer totalGuests);
+
+    List<PropertyCitiesResponseDto> getAllCities();
+
+    HomeResponseDto getHomeData();
 
     Property getPropertyById(Long propertyId);
 
