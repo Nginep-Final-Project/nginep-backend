@@ -1,9 +1,6 @@
 package com.example.nginep.property.controller;
 
-import com.example.nginep.property.dto.HomeResponseDto;
-import com.example.nginep.property.dto.PropertyRequestDto;
-import com.example.nginep.property.dto.PropertyResponseDto;
-import com.example.nginep.property.dto.SearchResponseDto;
+import com.example.nginep.property.dto.*;
 import com.example.nginep.property.service.PropertyService;
 import com.example.nginep.response.Response;
 import lombok.extern.java.Log;
@@ -39,7 +36,7 @@ public class PropertyController {
     }
 
     @GetMapping("/{propertyId}")
-    public ResponseEntity<Response<PropertyResponseDto>> getDetailProperty(@PathVariable Long propertyId) {
+    public ResponseEntity<Response<DetailPropertyResponseDto>> getDetailProperty(@PathVariable Long propertyId) {
         return Response.successResponse("Get detail property success", propertyService.getDetailProperty(propertyId));
     }
 

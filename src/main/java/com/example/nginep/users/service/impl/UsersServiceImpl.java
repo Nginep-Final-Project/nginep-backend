@@ -302,6 +302,7 @@ public class UsersServiceImpl implements UsersService {
         response.setBankName(user.getBankName());
         response.setBankAccountNumber(user.getBankAccountNumber());
         response.setBankHolderName(user.getBankHolderName());
+        response.setCreatedAt(user.getCreatedAt());
         return response;
     }
 }

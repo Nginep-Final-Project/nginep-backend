@@ -163,9 +163,28 @@ public class PropertyServiceImpl implements PropertyService {
     }
 
     @Override
-    public PropertyResponseDto getDetailProperty(Long propertyId) {
+    public DetailPropertyResponseDto getDetailProperty(Long propertyId) {
         Property property = getPropertyById(propertyId);
-        return mapToPropertyResponseDto(property);
+        DetailPropertyResponseDto detail = new DetailPropertyResponseDto();
+        detail.setId(property.getId());
+        detail.setPropertyName(property.getPropertyName());
+        detail.setPropertyCategory(property.getPropertyCategory());
+        detail.setPropertyDescription(property.getPropertyDescription());
+        detail.setPropertyFacilities(propertyFacilityService.getFacilityByPropertyId(property.getId()));
+        detail.setPropertyImage(propertyImageService.getPropertyImageByPropertyId(property.getId()));
+        detail.setGuestPlaceType(property.getGuestPlaceType());
+        detail.setPropertyAddress(property.getPropertyAddress());
+        detail.setPropertyCity(property.getPropertyCity());
+        detail.setPropertyProvince(property.getPropertyProvince());
+        detail.setPropertyPostalCode(property.getPropertyPostalCode());
+        detail.setPropertyLatitude(property.getPropertyLatitude());
+        detail.setPropertyLongitude(property.getPropertyLongitude());
+        detail.setRooms(roomService.getRoomByPropertyId(property.getId()));
+        detail.setPeakSeasonRate(peakSeasonRatesService.getPeakSeasonRatesByPropertyId(property.getId()));
+        detail.setTenant(usersService.getDetailUser(property.getUser().getEmail()));
+        detail.setReviewSummary(reviewService.getPropertyReviewSummary(property.getId()));
+        detail.setReviewList(reviewService.getTopReviewsByPropertyId(property.getId(), 7));
+        return detail;
     }
 
     @Override

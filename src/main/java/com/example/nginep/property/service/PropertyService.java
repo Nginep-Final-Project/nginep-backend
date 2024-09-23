@@ -23,7 +23,7 @@ public interface PropertyService {
 
     Property getPropertyById(Long propertyId);
 
-    PropertyResponseDto getDetailProperty(Long propertyId);
+    DetailPropertyResponseDto getDetailProperty(Long propertyId);
 
     String deleteProperty(Long propertyId);
 }

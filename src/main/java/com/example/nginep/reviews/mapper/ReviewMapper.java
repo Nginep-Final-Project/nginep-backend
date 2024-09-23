@@ -19,6 +19,7 @@ public class ReviewMapper {
         dto.setBookingId(review.getBooking().getId());
         dto.setPropertyName(review.getProperty().getPropertyName());
         dto.setFullName(review.getUser().getFullName());
+        dto.setUserPicture(review.getUser().getProfilePicture());
         dto.setCleanlinessRating(review.getCleanlinessRating());
         dto.setCommunicationRating(review.getCommunicationRating());
         dto.setCheckInRating(review.getCheckInRating());

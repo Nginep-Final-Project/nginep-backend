@@ -20,6 +20,7 @@ public class SignupRequestDto {
         user.setEmail(email);
         user.setPassword(password);
         user.setRole(role);
+        user.setProfilePicture("https://res.cloudinary.com/dhbg53ncx/image/upload/v1724048239/y2v5dowacq3zuvraaeem.png");
         user.setAccountType(Users.AccountType.valueOf("email"));
         return user;
     }
