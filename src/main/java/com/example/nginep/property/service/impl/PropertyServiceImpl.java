@@ -101,7 +101,7 @@ public class PropertyServiceImpl implements PropertyService {
     }
 
     @Override
-    public List<PropertyResponseDto> GetPropertyByTenantId(Long tenantId) {
+    public List<PropertyResponseDto> getPropertyByTenantId(Long tenantId) {
         return propertyRepository.findAllByUserId(tenantId).stream().map(this::mapToPropertyResponseDto).toList();
     }
 

@@ -11,7 +11,7 @@ public interface PropertyService {
 
     PropertyResponseDto updateProperty(PropertyRequestDto propertyRequestDto);
 
-    List<PropertyResponseDto> GetPropertyByTenantId(Long tenantId);
+    List<PropertyResponseDto> getPropertyByTenantId(Long tenantId);
 
     Property getPropertyById(Long propertyId);
 

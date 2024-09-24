@@ -46,7 +46,7 @@ public class PropertyController {
     @GetMapping("/tenant/{tenantId}")
     public ResponseEntity<Response<List
             <PropertyResponseDto>>> getPropertiesByTenantId(@PathVariable Long tenantId) {
-        List<PropertyResponseDto> properties = propertyService.GetPropertyByTenantId(tenantId);
+        List<PropertyResponseDto> properties = propertyService.getPropertyByTenantId(tenantId);
         return Response.successResponse("Properties retrieved successfully", properties);
     }
 }
