@@ -1,5 +1,6 @@
 package com.example.nginep.payments.service;
 
+import com.example.nginep.bookings.entity.Booking;
 import com.example.nginep.payments.dto.UploadProofOfPaymentDto;
 import com.example.nginep.payments.entity.Payment;
 import com.example.nginep.payments.enums.PaymentStatus;
@@ -10,7 +11,7 @@ import java.math.BigDecimal;
 import java.util.Map;
 
 public interface PaymentService {
-    Map<String, Object> createPayment(Long bookingId, BigDecimal amount, PaymentType paymentType, String bank);
+    Map<String, Object> createPayment(Booking booking, BigDecimal amount, PaymentType paymentType, String bank);
 
     Payment uploadProofOfPayment(UploadProofOfPaymentDto uploadProofOfPaymentDTO);
 

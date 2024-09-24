@@ -1,5 +1,7 @@
 package com.example.nginep.payments.service.impl;
 
+import com.example.nginep.bookings.entity.Booking;
+import com.example.nginep.bookings.enums.BookingStatus;
 import com.example.nginep.cloudinary.dto.CloudinaryUploadResponseDto;
 import com.example.nginep.cloudinary.service.CloudinaryService;
 import com.example.nginep.exceptions.applicationException.ApplicationException;
@@ -39,9 +41,9 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     @Transactional
-    public Map<String, Object> createPayment(Long bookingId, BigDecimal amount, PaymentType paymentType, String bank) {
+    public Map<String, Object> createPayment(Booking booking, BigDecimal amount, PaymentType paymentType, String bank) {
         Payment payment = new Payment();
-        payment.setBookingId(bookingId);
+        payment.setBooking(booking);
         payment.setAmount(amount);
         payment.setPaymentType(paymentType);
         payment.setStatus(PaymentStatus.PENDING_PAYMENT);
@@ -66,6 +68,7 @@ public class PaymentServiceImpl implements PaymentService {
                     throw new ApplicationException("Unexpected transaction status: " + transactionStatus);
                 }
 
+                updatePaymentWithMidtransResponse(payment, chargeResponse, bank);
                 paymentRepository.save(payment);
 
                 result.put("midtransResponse", chargeResponse.toMap());
@@ -75,6 +78,32 @@ public class PaymentServiceImpl implements PaymentService {
         }
 
         return result;
+    }
+
+    private void updatePaymentWithMidtransResponse(Payment payment, JSONObject chargeResponse, String bank) {
+        payment.setSpecificPaymentType(bank);
+
+        switch (bank.toLowerCase()) {
+            case "bca":
+            case "bni":
+            case "bri":
+                JSONObject vaNumbers = chargeResponse.getJSONArray("va_numbers").getJSONObject(0);
+                payment.setVaNumber(vaNumbers.getString("va_number"));
+                break;
+            case "permata":
+                payment.setVaNumber(chargeResponse.getString("permata_va_number"));
+                break;
+            case "mandiri":
+                payment.setBillKey(chargeResponse.getString("bill_key"));
+                payment.setBillerCode(chargeResponse.getString("biller_code"));
+                break;
+            case "e-wallet/qris":
+                JSONObject qrisUrl = chargeResponse.getJSONArray("actions").getJSONObject(0);
+                payment.setQrisUrl(qrisUrl.getString("url"));
+                break;
+            default:
+                throw new ApplicationException("Unsupported bank: " + bank);
+        }
     }
 
     @Override
@@ -148,6 +177,7 @@ public class PaymentServiceImpl implements PaymentService {
         }
 
         payment.setStatus(PaymentStatus.CONFIRMED);
+        payment.getBooking().setStatus(BookingStatus.AWAITING_CONFIRMATION);
         return paymentRepository.save(payment);
     }
 
