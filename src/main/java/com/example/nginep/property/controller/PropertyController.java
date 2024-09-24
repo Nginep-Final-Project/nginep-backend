@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.time.LocalDate;
 
 @RestController
@@ -44,6 +45,12 @@ public class PropertyController {
     public ResponseEntity<Response<String>> deleteProperty(@PathVariable Long propertyId) {
         return Response.successResponse("Delete property success", propertyService.deleteProperty(propertyId));
     }
+
+    @GetMapping("/tenant/{tenantId}")
+    public ResponseEntity<Response<List
+            <PropertyResponseDto>>> getPropertiesByTenantId(@PathVariable Long tenantId) {
+        List<PropertyResponseDto> properties = propertyService.getPropertyByTenantId(tenantId);
+        return Response.successResponse("Properties retrieved successfully", properties);
 
     @GetMapping
     public ResponseEntity<Response<Page<SearchResponseDto>>> getAllProperties(

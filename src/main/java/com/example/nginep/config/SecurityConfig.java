@@ -98,6 +98,8 @@ public class SecurityConfig {
                     auth.requestMatchers("/api/v1/property-image").hasAuthority("SCOPE_tenant");
                     auth.requestMatchers("/api/v1/rooms").hasAuthority("SCOPE_tenant");
                     auth.requestMatchers(HttpMethod.GET,"/api/v1/property/**").permitAll();
+                    auth.requestMatchers("/api/v1/reviews/**").permitAll();
+                    auth.requestMatchers("/api/v1/review-replies/**").permitAll();
                     auth.anyRequest().authenticated();
                 })
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

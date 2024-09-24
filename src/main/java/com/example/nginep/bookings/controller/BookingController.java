@@ -96,4 +96,11 @@ public class BookingController {
     public ResponseEntity<Response<String>> editNotAvailableBooking(@PathVariable Long bookingId) {
         return Response.successResponse("Delete not available booking success", bookingService.deleteNotAvailableBooking(bookingId));
     }
+
+    @GetMapping("/user/{userId}/unreviewed")
+    public ResponseEntity<Response<List<UnreviewedBookingDto>>> getUnreviewedBookings(@PathVariable Long userId) {
+        List<UnreviewedBookingDto> unreviewedBookings = bookingService.getUnreviewedBookingsForUser(userId);
+        return Response.successResponse("Unreviewed bookings retrieved successfully", unreviewedBookings);
+    }
+  
 }

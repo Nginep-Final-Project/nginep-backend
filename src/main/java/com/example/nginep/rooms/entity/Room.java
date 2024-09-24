@@ -54,6 +54,7 @@ public class Room {
     @Column(name = "total_room")
     private Integer totalRoom;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Booking> bookings;
 

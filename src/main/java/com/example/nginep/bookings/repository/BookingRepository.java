@@ -37,4 +37,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
                                      @Param("checkOutDate") LocalDate checkOutDate,
                                      @Param("cancelledStatus") BookingStatus cancelledStatus);
 
+    @Query("SELECT b FROM Booking b WHERE b.user.id = :userId AND b.status = 'CONFIRMED' AND b.checkOutDate < CURRENT_DATE AND NOT EXISTS (SELECT r FROM Review r WHERE r.booking = b)")
+    List<Booking> findUnreviewedBookingsForUser(@Param("userId") Long userId);
+
 }
