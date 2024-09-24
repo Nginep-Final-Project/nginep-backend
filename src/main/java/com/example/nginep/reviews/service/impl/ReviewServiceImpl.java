@@ -20,17 +20,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class ReviewServiceImpl implements ReviewService {
 
     private final ReviewRepository reviewRepository;
     private final BookingService bookingService;
     private final ReviewMapper reviewMapper;
-
-    public ReviewServiceImpl(ReviewRepository reviewRepository, BookingService bookingService, ReviewMapper reviewMapper) {
-        this.reviewRepository = reviewRepository;
-        this.bookingService = bookingService;
-        this.reviewMapper = reviewMapper;
-    }
 
     @Override
     public PropertyReviewSummaryDto getPropertyReviewSummary(Long propertyId) {

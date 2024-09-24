@@ -8,8 +8,6 @@ import com.example.nginep.propertyImages.dto.PropertyImageResponseDto;
 import com.example.nginep.propertyImages.entity.PropertyImage;
 import com.example.nginep.propertyImages.repository.PropertyImageRepository;
 import com.example.nginep.propertyImages.service.PropertyImageService;
-import com.example.nginep.users.entity.Users;
-import com.example.nginep.users.service.UsersService;
 import lombok.extern.java.Log;
 import org.springframework.stereotype.Service;
 
@@ -21,7 +19,7 @@ public class PropertyImageServiceImpl implements PropertyImageService {
     private final PropertyImageRepository propertyImageRepository;
     private final PropertyService propertyService;
 
-    public PropertyImageServiceImpl(PropertyImageRepository propertyImageRepository, PropertyService propertyService){
+    public PropertyImageServiceImpl(PropertyImageRepository propertyImageRepository, PropertyService propertyService) {
         this.propertyImageRepository = propertyImageRepository;
         this.propertyService = propertyService;
     }
@@ -34,8 +32,28 @@ public class PropertyImageServiceImpl implements PropertyImageService {
     }
 
     @Override
+    public String setThumbnailImage(PropertyImageRequestDto propertyImageRequestDto) {
+        List<PropertyImage> propertyImages = propertyImageRepository.findAllByPropertyId(propertyImageRequestDto.getPropertyId());
+
+        boolean publicKeyExists = propertyImages.stream()
+                .anyMatch(image -> image.getPublicKey().equals(propertyImageRequestDto.getPublicKey()));
+
+        if (!publicKeyExists) {
+            throw new NotFoundException("PublicKey " + propertyImageRequestDto.getPublicKey() + " does not exist for property with id: " + propertyImageRequestDto.getPropertyId());
+        }
+
+        for (PropertyImage image : propertyImages) {
+            image.setIsThumbnail(image.getPublicKey().equals(propertyImageRequestDto.getPublicKey()));
+            propertyImageRepository.save(image);
+        }
+
+        return "Update thumbnail success";
+    }
+
+    @Override
     public List<PropertyImageResponseDto> getPropertyImageByPropertyId(Long propertyId) {
-        return propertyImageRepository.findAllByPropertyId(propertyId).stream().map(this::mapToPropertyImageResponseDto).toList();
+        List<PropertyImage> propertyImages = propertyImageRepository.findAllByPropertyId(propertyId);
+        return sortImagesByThumbnail(propertyImages).stream().map(this::mapToPropertyImageResponseDto).toList();
     }
 
     @Override
@@ -43,6 +61,30 @@ public class PropertyImageServiceImpl implements PropertyImageService {
         propertyImageRepository.findById(propertyImageId).orElseThrow(() -> new NotFoundException("Property image with id: " + propertyImageId + " not found"));
         propertyImageRepository.deleteById(propertyImageId);
         return "Property image with id: " + propertyImageId + " has deleted successfully";
+    }
+
+    public List<PropertyImage> sortImagesByThumbnail(List<PropertyImage> images) {
+        if (images == null || images.size() <= 1) {
+            return images;
+        }
+
+        PropertyImage thumbnail = null;
+        int thumbnailIndex = -1;
+        for (int i = 0; i < images.size(); i++) {
+            if (images.get(i).getIsThumbnail()) {
+                thumbnail = images.get(i);
+                thumbnailIndex = i;
+                break;
+            }
+        }
+
+        if (thumbnail != null && thumbnailIndex != 0) {
+            images.remove(thumbnailIndex);
+            images.addFirst(thumbnail);
+        }
+
+        log.info(images.toString());
+        return images;
     }
 
     public PropertyImageResponseDto mapToPropertyImageResponseDto(PropertyImage propertyImage) {

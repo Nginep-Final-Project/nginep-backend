@@ -3,6 +3,7 @@ package com.example.nginep.users.dto;
 import com.example.nginep.languages.dto.LangaugesResponseDto;
 import lombok.Data;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
@@ -28,4 +29,5 @@ public class UsersResponseDto {
     private String bankName;
     private String bankAccountNumber;
     private String bankHolderName;
+    private Instant createdAt;
 }

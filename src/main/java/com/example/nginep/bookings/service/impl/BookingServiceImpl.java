@@ -134,11 +134,6 @@ public class BookingServiceImpl implements BookingService {
         return bookingRepository.findAllByRoomId(roomId);
     }
 
-//    @Override
-//    public List<Booking> getTenantBookings(Long tenantId, BookingStatus status) {
-//        return bookingRepository.findByTenantIdAndStatus(tenantId, status);
-//    }
-
     @Override
     @Transactional
     public Booking confirmBooking(Long bookingId) {
@@ -185,6 +180,21 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public Booking findBookingById(Long bookingId) {
         return bookingRepository.findById(bookingId).orElseThrow(() -> new NotFoundException("Booking not found with id: " + bookingId));
+    }
+
+    @Override
+    public Booking editNotAvailableBooking(CreateNotAvailableBookingDTO createNotAvailableBookingDTO) {
+        Booking booking = bookingRepository.findById(createNotAvailableBookingDTO.getId()).orElseThrow(()->new NotFoundException("Booking with id: " + createNotAvailableBookingDTO.getId() + " not found"));
+        booking.setCheckInDate(createNotAvailableBookingDTO.getCheckInDate());
+        booking.setCheckOutDate(createNotAvailableBookingDTO.getCheckOutDate());
+        return bookingRepository.save(booking);
+    }
+
+    @Override
+    public String deleteNotAvailableBooking(Long bookingId) {
+        bookingRepository.findById(bookingId).orElseThrow(()->new NotFoundException("Booking with id: " + bookingId + " not found"));
+        bookingRepository.deleteById(bookingId);
+        return "Delete Booking with id " + bookingId + " success";
     }
 
     @Override

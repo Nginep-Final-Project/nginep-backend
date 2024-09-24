@@ -9,6 +9,7 @@ public class ReviewDto {
     private Long id;
     private Long bookingId;
     private String propertyName;
+    private String userPicture;
     private String fullName;
     private Integer cleanlinessRating;
     private Integer communicationRating;

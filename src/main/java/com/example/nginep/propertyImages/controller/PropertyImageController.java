@@ -27,6 +27,11 @@ public class PropertyImageController {
         return Response.successResponse("Create property image success", propertyImageService.createPropertyImage(propertyImageRequestDto));
     }
 
+    @PutMapping
+    public ResponseEntity<Response<String>> setThumbnailImage(@RequestBody PropertyImageRequestDto propertyImageRequestDto){
+        return Response.successResponse("Update thumbnail property image success", propertyImageService.setThumbnailImage(propertyImageRequestDto));
+    }
+
     @GetMapping("/{propertyId}")
     public ResponseEntity<Response<List<PropertyImageResponseDto>>> getPropertyImageByPropertyId(@PathVariable Long propertyId){
         return Response.successResponse("Get property image success", propertyImageService.getPropertyImageByPropertyId(propertyId));

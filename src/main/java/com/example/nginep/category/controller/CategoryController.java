@@ -36,7 +36,12 @@ public class CategoryController {
 
     @GetMapping
     public ResponseEntity<Response<List<CategoryResponseDto>>> getCategoryByTenantId() {
-        return Response.successResponse("Get list category success", categoryService.getCategoryByTenantId());
+        return Response.successResponse("Get list category success by tenant id", categoryService.getCategoryByTenantId());
+    }
+
+    @GetMapping("/list")
+    public ResponseEntity<Response<List<CategoryResponseDto>>> getAllCategory() {
+        return Response.successResponse("Get list category success", categoryService.getAllCategory());
     }
 
     @DeleteMapping("/{categoryId}")
