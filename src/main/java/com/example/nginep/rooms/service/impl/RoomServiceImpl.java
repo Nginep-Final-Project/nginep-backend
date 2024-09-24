@@ -6,19 +6,16 @@ import com.example.nginep.property.entity.Property;
 import com.example.nginep.property.service.PropertyService;
 import com.example.nginep.rooms.dto.RoomRequestDto;
 import com.example.nginep.rooms.dto.RoomResponseDto;
+import com.example.nginep.rooms.dto.SearchAvailableRoomRequestDto;
 import com.example.nginep.rooms.entity.Room;
 import com.example.nginep.rooms.repository.RoomRepository;
 import com.example.nginep.rooms.service.RoomService;
 import com.example.nginep.exceptions.notFoundException.NotFoundException;
 
-import com.example.nginep.users.service.UsersService;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.math.BigDecimal;
 import java.util.List;
 
 @Service
@@ -85,10 +82,20 @@ public class RoomServiceImpl implements RoomService {
         return "Room with id: " + roomId + " has deleted successfully";
     }
 
+    @Override
+    public List<Room> searchRoomAvailable(SearchAvailableRoomRequestDto searchAvailableRoomRequestDto) {
+        return roomRepository.findAvailableRooms(searchAvailableRoomRequestDto.getStartDate(),
+                searchAvailableRoomRequestDto.getEndDate(),
+                searchAvailableRoomRequestDto.getTotalGuest(),
+                searchAvailableRoomRequestDto.getPropertyId());
+    }
+
     public RoomResponseDto mapToRoomResponseDto(Room room) {
         RoomResponseDto response = new RoomResponseDto();
         response.setId(room.getId());
         response.setName(room.getName());
+        response.setRoomPicture(room.getRoomPicture());
+        response.setRoomPictureId(room.getRoomPictureId());
         response.setDescription(room.getDescription());
         response.setBasePrice(room.getBasePrice());
         response.setMaxGuests(room.getMaxGuests());

@@ -12,6 +12,8 @@ import java.util.List;
 public class RoomRequestDto {
     private Long id;
     private String name;
+    private String roomPicture;
+    private String roomPictureId;
     private String description;
     private Integer maxGuests;
     private BigDecimal basePrice;
@@ -22,6 +24,8 @@ public class RoomRequestDto {
     public Room toEntity(Property property) {
         Room newRoom = new Room();
         newRoom.setName(name);
+        newRoom.setRoomPicture(roomPicture);
+        newRoom.setRoomPictureId(roomPictureId);
         newRoom.setDescription(description);
         newRoom.setMaxGuests(maxGuests);
         newRoom.setBasePrice(basePrice);
