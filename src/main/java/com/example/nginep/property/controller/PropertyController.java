@@ -10,6 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("api/v1/property")
 @Validated
@@ -39,5 +41,12 @@ public class PropertyController {
     @DeleteMapping("/{propertyId}")
     public ResponseEntity<Response<String>> deleteProperty(@PathVariable Long propertyId){
         return Response.successResponse("Delete property success", propertyService.deleteProperty(propertyId));
+    }
+
+    @GetMapping("/tenant/{tenantId}")
+    public ResponseEntity<Response<List
+            <PropertyResponseDto>>> getPropertiesByTenantId(@PathVariable Long tenantId) {
+        List<PropertyResponseDto> properties = propertyService.GetPropertyByTenantId(tenantId);
+        return Response.successResponse("Properties retrieved successfully", properties);
     }
 }

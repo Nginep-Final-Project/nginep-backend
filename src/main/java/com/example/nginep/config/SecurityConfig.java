@@ -92,6 +92,8 @@ public class SecurityConfig {
                     auth.requestMatchers("/api/v1/bookings/**").permitAll();
                     auth.requestMatchers("/api/v1/payments/**").permitAll();
                     auth.requestMatchers("/api/v1/midtrans/**").permitAll();
+                    auth.requestMatchers("/api/v1/reviews/**").permitAll();
+                    auth.requestMatchers("/api/v1/review-replies/**").permitAll();
                     auth.anyRequest().authenticated();
                 })
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

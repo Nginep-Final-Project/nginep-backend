@@ -1,9 +1,6 @@
 package com.example.nginep.bookings.controller;
 
-import com.example.nginep.bookings.dto.BookingPaymentDetailsDto;
-import com.example.nginep.bookings.dto.TenantBookingsDto;
-import com.example.nginep.bookings.dto.UserBookingsDto;
-import com.example.nginep.bookings.dto.CreateBookingDto;
+import com.example.nginep.bookings.dto.*;
 import com.example.nginep.bookings.entity.Booking;
 import com.example.nginep.bookings.enums.BookingStatus;
 import com.example.nginep.bookings.service.BookingService;
@@ -78,6 +75,12 @@ public class BookingController {
         } else {
             return Response.successResponse("No existing pending booking found", null);
         }
+    }
+
+    @GetMapping("/user/{userId}/unreviewed")
+    public ResponseEntity<Response<List<UnreviewedBookingDto>>> getUnreviewedBookings(@PathVariable Long userId) {
+        List<UnreviewedBookingDto> unreviewedBookings = bookingService.getUnreviewedBookingsForUser(userId);
+        return Response.successResponse("Unreviewed bookings retrieved successfully", unreviewedBookings);
     }
 
 }

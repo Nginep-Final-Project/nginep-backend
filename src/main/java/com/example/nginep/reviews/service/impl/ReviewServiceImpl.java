@@ -98,4 +98,12 @@ public class ReviewServiceImpl implements ReviewService {
         return reviewRepository.findById(reviewId).orElseThrow(() -> new NotFoundException("Review not found with id: " + reviewId));
     }
 
+    @Override
+    public List<ReviewDto> getReviewsByPropertyId(Long propertyId) {
+        List<Review> reviews = reviewRepository.findByPropertyId(propertyId);
+        return reviews.stream()
+                .map(reviewMapper::mapToReviewDto)
+                .collect(Collectors.toList());
+    }
+
 }

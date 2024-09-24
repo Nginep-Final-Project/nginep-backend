@@ -1,10 +1,6 @@
 package com.example.nginep.bookings.service.impl;
 
-import com.example.nginep.bookings.dto.CreateNotAvailableBookingDTO;
-import com.example.nginep.bookings.dto.BookingPaymentDetailsDto;
-import com.example.nginep.bookings.dto.TenantBookingsDto;
-import com.example.nginep.bookings.dto.UserBookingsDto;
-import com.example.nginep.bookings.dto.CreateBookingDto;
+import com.example.nginep.bookings.dto.*;
 import com.example.nginep.bookings.entity.Booking;
 import com.example.nginep.bookings.enums.BookingStatus;
 import com.example.nginep.bookings.repository.BookingRepository;
@@ -16,13 +12,14 @@ import com.example.nginep.payments.entity.Payment;
 import com.example.nginep.payments.enums.PaymentStatus;
 import com.example.nginep.payments.enums.PaymentType;
 import com.example.nginep.payments.service.PaymentService;
+import com.example.nginep.propertyImages.dto.PropertyImageResponseDto;
+import com.example.nginep.propertyImages.service.PropertyImageService;
 import com.example.nginep.rooms.entity.Room;
 import com.example.nginep.rooms.service.RoomService;
 import com.example.nginep.users.service.UsersService;
 import com.example.nginep.property.entity.Property;
 import com.example.nginep.users.entity.Users;
 import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
@@ -44,13 +41,15 @@ public class BookingServiceImpl implements BookingService {
     private final PaymentService paymentService;
     private final UsersService userService;
     private final TaskScheduler taskScheduler;
+    private final PropertyImageService propertyImageService;
 
-    public BookingServiceImpl(@Lazy BookingRepository bookingRepository, @Lazy RoomService roomService, PaymentService paymentService, UsersService userService, TaskScheduler taskScheduler) {
+    public BookingServiceImpl(@Lazy BookingRepository bookingRepository, @Lazy RoomService roomService, PaymentService paymentService, UsersService userService, TaskScheduler taskScheduler, @Lazy PropertyImageService propertyImageService) {
         this.bookingRepository = bookingRepository;
         this.roomService = roomService;
         this.paymentService = paymentService;
         this.userService = userService;
         this.taskScheduler = taskScheduler;
+        this.propertyImageService = propertyImageService;
     }
 
     @Override
@@ -242,7 +241,7 @@ public class BookingServiceImpl implements BookingService {
         dto.setPropertyAddress(booking.getRoom().getProperty().getPropertyAddress());
         dto.setPropertyCity(booking.getRoom().getProperty().getPropertyCity());
         dto.setPropertyProvince(booking.getRoom().getProperty().getPropertyProvince());
-//        dto.setPropertyCoverImage(booking.getRoom().getProperty().getPropertyImages());
+        dto.setPropertyCoverImage(getCoverImage(booking.getRoom().getProperty().getId()));
         return dto;
     }
 
@@ -272,7 +271,7 @@ public class BookingServiceImpl implements BookingService {
         dto.setPaymentType(booking.getPayment().getPaymentType());
         dto.setPaymentStatus(booking.getPayment().getStatus());
         dto.setProofOfPayment(booking.getPayment().getProofOfPayment());
-//        dto.setPropertyCoverImage(booking.getRoom().getProperty().getPropertyImages());
+        dto.setPropertyCoverImage(getCoverImage(booking.getRoom().getProperty().getId()));
         return dto;
     }
 
@@ -295,7 +294,7 @@ public class BookingServiceImpl implements BookingService {
         dto.setPropertyAddress(property.getPropertyAddress());
         dto.setPropertyCity(property.getPropertyCity());
         dto.setPropertyProvince(property.getPropertyProvince());
-//        dto.setCoverImage(property.getCoverImage());
+        dto.setCoverImage(getCoverImage(booking.getRoom().getProperty().getId()));
         dto.setPaymentType(payment.getPaymentType());
 
         if (payment.getPaymentType() == PaymentType.MANUAL_PAYMENT) {
@@ -341,5 +340,31 @@ public class BookingServiceImpl implements BookingService {
             }
             bookingRepository.save(booking);
         }
+    }
+
+    @Override
+    public List<UnreviewedBookingDto> getUnreviewedBookingsForUser(Long userId) {
+        List<Booking> bookings = bookingRepository.findUnreviewedBookingsForUser(userId);
+        return bookings.stream().map(this::mapToUnreviewedBookingDto).collect(Collectors.toList());
+    }
+
+    private UnreviewedBookingDto mapToUnreviewedBookingDto(Booking booking) {
+        UnreviewedBookingDto dto = new UnreviewedBookingDto();
+        dto.setId(booking.getId());
+        dto.setPropertyName(booking.getRoom().getProperty().getPropertyName());
+        dto.setRoomName(booking.getRoom().getName());
+        dto.setCheckInDate(booking.getCheckInDate());
+        dto.setCheckOutDate(booking.getCheckOutDate());
+        dto.setPropertyCoverImage(getCoverImage(booking.getRoom().getProperty().getId()));
+        return dto;
+    }
+
+    private String getCoverImage(Long propertyId) {
+        List<PropertyImageResponseDto> propertyImages = propertyImageService.getPropertyImageByPropertyId(propertyId);
+        return propertyImages.stream()
+                .filter(PropertyImageResponseDto::getIsThumbnail)
+                .findFirst()
+                .map(PropertyImageResponseDto::getPath)
+                .orElse(null);
     }
 }

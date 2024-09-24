@@ -43,4 +43,10 @@ public class ReviewController {
         List<ReviewDto> userReviews = reviewService.getUserReviews(userId);
         return Response.successResponse("User reviews retrieved successfully", userReviews);
     }
+
+    @GetMapping("/property/{propertyId}")
+    public ResponseEntity<Response<List<ReviewDto>>> getReviewsByPropertyId(@PathVariable Long propertyId) {
+        List<ReviewDto> reviews = reviewService.getReviewsByPropertyId(propertyId);
+        return Response.successResponse("Reviews retrieved successfully", reviews);
+    }
 }

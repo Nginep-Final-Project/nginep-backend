@@ -1,10 +1,6 @@
 package com.example.nginep.bookings.service;
 
-import com.example.nginep.bookings.dto.BookingPaymentDetailsDto;
-import com.example.nginep.bookings.dto.TenantBookingsDto;
-import com.example.nginep.bookings.dto.UserBookingsDto;
-import com.example.nginep.bookings.dto.CreateBookingDto;
-import com.example.nginep.bookings.dto.CreateNotAvailableBookingDTO;
+import com.example.nginep.bookings.dto.*;
 import com.example.nginep.bookings.entity.Booking;
 import com.example.nginep.bookings.enums.BookingStatus;
 
@@ -38,5 +34,7 @@ public interface BookingService {
     void cancelBookingIfPending(Long bookingId);
 
     Booking findBookingById(Long bookingId);
+
+    List<UnreviewedBookingDto> getUnreviewedBookingsForUser(Long userId);
 
 }
