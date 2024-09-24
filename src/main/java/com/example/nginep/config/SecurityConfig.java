@@ -92,6 +92,12 @@ public class SecurityConfig {
                     auth.requestMatchers("/api/v1/bookings/**").permitAll();
                     auth.requestMatchers("/api/v1/payments/**").permitAll();
                     auth.requestMatchers("/api/v1/midtrans/**").permitAll();
+                    auth.requestMatchers("/api/v1/category").hasAuthority("SCOPE_tenant");
+                    auth.requestMatchers("/api/v1/peak-season-rates").hasAuthority("SCOPE_tenant");
+                    auth.requestMatchers("/api/v1/property-facility").hasAuthority("SCOPE_tenant");
+                    auth.requestMatchers("/api/v1/property-image").hasAuthority("SCOPE_tenant");
+                    auth.requestMatchers("/api/v1/rooms").hasAuthority("SCOPE_tenant");
+                    auth.requestMatchers(HttpMethod.GET,"/api/v1/property/**").permitAll();
                     auth.anyRequest().authenticated();
                 })
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

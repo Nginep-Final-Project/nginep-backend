@@ -72,6 +72,7 @@ public class RoomServiceImpl implements RoomService {
         room.setDescription(roomRequestDto.getDescription());
         room.setBasePrice(roomRequestDto.getBasePrice());
         room.setMaxGuests(roomRequestDto.getMaxGuests());
+        room.setTotalRoom(roomRequestDto.getTotalRoom());
         Room editedRoom = roomRepository.save(room);
         return mapToRoomResponseDto(editedRoom);
     }

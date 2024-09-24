@@ -1,9 +1,6 @@
 package com.example.nginep.bookings.controller;
 
-import com.example.nginep.bookings.dto.BookingPaymentDetailsDto;
-import com.example.nginep.bookings.dto.TenantBookingsDto;
-import com.example.nginep.bookings.dto.UserBookingsDto;
-import com.example.nginep.bookings.dto.CreateBookingDto;
+import com.example.nginep.bookings.dto.*;
 import com.example.nginep.bookings.entity.Booking;
 import com.example.nginep.bookings.enums.BookingStatus;
 import com.example.nginep.bookings.service.BookingService;
@@ -80,4 +77,23 @@ public class BookingController {
         }
     }
 
+    @PostMapping("/not-available-booking")
+    public ResponseEntity<Response<Booking>> createNotAvailableBooking(@RequestBody CreateNotAvailableBookingDTO createNotAvailableBookingDTO) {
+        return Response.successResponse("Create not available booking success", bookingService.createNotAvailableBooking(createNotAvailableBookingDTO));
+    }
+
+    @GetMapping("/room/{roomId}")
+    public ResponseEntity<Response<List<Booking>>> getBookingByRoomId(@PathVariable Long roomId){
+        return Response.successResponse("Get list booking by room id success", bookingService.getBookingByRoomId(roomId));
+    }
+
+    @PutMapping("/not-available-booking")
+    public ResponseEntity<Response<Booking>> editNotAvailableBooking(@RequestBody CreateNotAvailableBookingDTO createNotAvailableBookingDTO) {
+        return Response.successResponse("Edit not available booking success", bookingService.editNotAvailableBooking(createNotAvailableBookingDTO));
+    }
+
+    @DeleteMapping("/not-available-booking/{bookingId}")
+    public ResponseEntity<Response<String>> editNotAvailableBooking(@PathVariable Long bookingId) {
+        return Response.successResponse("Delete not available booking success", bookingService.deleteNotAvailableBooking(bookingId));
+    }
 }
