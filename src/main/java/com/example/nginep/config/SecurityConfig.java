@@ -100,6 +100,7 @@ public class SecurityConfig {
                     auth.requestMatchers(HttpMethod.GET,"/api/v1/property/**").permitAll();
                     auth.requestMatchers("/api/v1/reviews/**").permitAll();
                     auth.requestMatchers("/api/v1/review-replies/**").permitAll();
+                    auth.requestMatchers(HttpMethod.POST,"/api/v1/rooms/availability").permitAll();
                     auth.anyRequest().authenticated();
                 })
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

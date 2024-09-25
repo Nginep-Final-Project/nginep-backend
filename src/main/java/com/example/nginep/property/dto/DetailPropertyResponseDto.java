@@ -5,7 +5,7 @@ import com.example.nginep.propertyFacility.dto.PropertyFacilityResponseDto;
 import com.example.nginep.propertyImages.dto.PropertyImageResponseDto;
 import com.example.nginep.reviews.dto.PropertyReviewSummaryDto;
 import com.example.nginep.reviews.dto.ReviewDto;
-import com.example.nginep.rooms.dto.RoomResponseDto;
+import com.example.nginep.rooms.entity.Room;
 import com.example.nginep.users.dto.UsersResponseDto;
 import lombok.Data;
 
@@ -26,7 +26,7 @@ public class DetailPropertyResponseDto {
     private String propertyPostalCode;
     private Double propertyLatitude;
     private Double propertyLongitude;
-    private List<RoomResponseDto> rooms;
+    private List<Room> rooms;
     private List<PeakSeasonRatesResponseDto> peakSeasonRate;
     private PropertyReviewSummaryDto reviewSummary;
     private List<ReviewDto> reviewList;
