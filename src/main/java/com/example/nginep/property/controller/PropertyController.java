@@ -64,7 +64,7 @@ public class PropertyController {
             @RequestParam(required = false) SortBy sortBy,
             @RequestParam(required = false) SortDirection sortDirection,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
+            @RequestParam(defaultValue = "12") int size) {
 
         Sort sort = createSort(sortBy, sortDirection);
         Pageable pageableWithSort = PageRequest.of(page, size, sort);
