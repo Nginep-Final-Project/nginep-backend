@@ -4,6 +4,8 @@ import com.example.nginep.bookings.entity.Booking;
 import com.example.nginep.property.entity.Property;
 import com.example.nginep.rooms.entity.Room;
 import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.Root;
+import jakarta.persistence.criteria.Subquery;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.time.LocalDate;
@@ -46,8 +48,15 @@ public class PropertySpecification {
                 return null;
             }
 
-            Join<Property, Room> rooms = root.join("rooms");
-            return criteriaBuilder.greaterThanOrEqualTo(rooms.get("maxGuests"), totalGuests);
+            Subquery<Room> subquery = query.subquery(Room.class);
+            Root<Room> roomRoot = subquery.from(Room.class);
+            subquery.select(roomRoot)
+                    .where(criteriaBuilder.and(
+                            criteriaBuilder.equal(roomRoot.get("property"), root),
+                            criteriaBuilder.greaterThanOrEqualTo(roomRoot.get("maxGuests"), totalGuests)
+                    ));
+
+            return criteriaBuilder.exists(subquery);
         };
     }
 }
