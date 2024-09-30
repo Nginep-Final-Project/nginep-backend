@@ -4,6 +4,8 @@ import com.example.nginep.bookings.dto.*;
 import com.example.nginep.bookings.entity.Booking;
 import com.example.nginep.bookings.enums.BookingStatus;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 public interface BookingService {
@@ -40,4 +42,14 @@ public interface BookingService {
     String deleteNotAvailableBooking(Long bookingId);
 
     List<UnreviewedBookingDto> getUnreviewedBookingsForUser(Long userId);
+
+    BigDecimal calculateTotalEarnings(Long tenantId);
+
+    Long countTotalBookings(Long tenantId);
+
+    BigDecimal calculatePeakSeasonRevenueDifference(Long tenantId);
+
+    List<Booking> getConfirmedBookingsBetweenDatesForTenant(Long tenantId, LocalDate startDate, LocalDate endDate);
+
+    BigDecimal calculateTotalEarningsForProperty(Long propertyId);
 }
