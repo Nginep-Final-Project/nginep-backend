@@ -228,4 +228,9 @@ public class PropertyServiceImpl implements PropertyService {
         response.setRating(reviewService.getPropertyReviewSummary(property.getId()).getAverageRating());
         return response;
     }
+
+    @Override
+    public Long countPropertiesByTenant(Long tenantId) {
+        return propertyRepository.countPropertiesByTenantId(tenantId);
+    }
 }
