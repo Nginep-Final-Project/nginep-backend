@@ -36,6 +36,12 @@ public class Room {
     @JoinColumn(name = "property_id", nullable = false)
     private Property property;
 
+    @Column(name = "room_picture")
+    private String roomPicture;
+
+    @Column(name="room_picture_id")
+    private String roomPictureId;
+
     @NotNull
     @Column(name = "name", nullable = false)
     private String name;

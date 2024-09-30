@@ -12,8 +12,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.time.LocalDate;
+import java.util.List;
 
 @RestController
 @RequestMapping("api/v1/property")
@@ -64,32 +64,35 @@ public class PropertyController {
             @RequestParam(required = false) SortBy sortBy,
             @RequestParam(required = false) SortDirection sortDirection,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
+            @RequestParam(defaultValue = "12") int size) {
 
-        Sort sort = createSort(sortBy, sortDirection);
-        Pageable pageableWithSort = PageRequest.of(page, size, sort);
-
+        Pageable pageableWithSort = createPageAble(sortBy, sortDirection, page, size);
 
         return Response.successResponse("All events fetched", propertyService.getAllProperty(pageableWithSort,
                 propertyName, propertyCategory, propertyCity, checkinDate, checkoutDate, totalGuests));
     }
 
     @GetMapping("/home")
-    public ResponseEntity<Response<HomeResponseDto>> getHomeData(){
+    public ResponseEntity<Response<HomeResponseDto>> getHomeData() {
         return Response.successResponse("Get home data success", propertyService.getHomeData());
     }
 
 
-    private Sort createSort(SortBy sortBy, SortDirection sortDirection) {
-        Sort.Direction direction = (sortDirection == SortDirection.DESC) ? Sort.Direction.DESC : Sort.Direction.ASC;
+    private Pageable createPageAble(SortBy sortBy, SortDirection sortDirection, Integer page, Integer size) {
+        if (sortBy != null && sortDirection != null) {
+            Sort.Direction direction = (sortDirection == SortDirection.DESC) ? Sort.Direction.DESC : Sort.Direction.ASC;
 
-        if (sortBy == SortBy.PRICE) {
-            return Sort.by(direction, "rooms.price");
-        } else {
-            return Sort.by(direction, "propertyName");
+            Sort sort;
+            if (sortBy == SortBy.PRICE) {
+                sort = Sort.by(direction, "rooms.basePrice");
+            } else {
+                sort = Sort.by(direction, "propertyName");
+            }
+            return PageRequest.of(page, size, sort);
         }
-    }
 
+        return PageRequest.of(page, size);
+    }
 
 
     public enum SortBy {
