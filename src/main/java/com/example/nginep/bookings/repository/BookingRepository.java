@@ -58,13 +58,6 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             "AND b.status = 'CONFIRMED'")
     List<Booking> findConfirmedBookingsByTenant(@Param("tenantId") Long tenantId);
 
-    @Query("SELECT b FROM Booking b JOIN b.room r JOIN r.property p WHERE p.user.id = :tenantId AND b.checkInDate BETWEEN :startDate AND :endDate")
-    List<Booking> findByTenantIdAndCheckInDateBetween(
-            @Param("tenantId") Long tenantId,
-            @Param("startDate") LocalDate startDate,
-            @Param("endDate") LocalDate endDate
-    );
-
     @Query("SELECT b FROM Booking b " +
             "JOIN b.room r " +
             "JOIN r.property p " +

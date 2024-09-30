@@ -49,8 +49,6 @@ public interface BookingService {
 
     BigDecimal calculatePeakSeasonRevenueDifference(Long tenantId);
 
-    List<Booking> getBookingsBetweenDatesForTenant(Long tenantId, LocalDate startDate, LocalDate endDate);
-
     List<Booking> getConfirmedBookingsBetweenDatesForTenant(Long tenantId, LocalDate startDate, LocalDate endDate);
 
     BigDecimal calculateTotalEarningsForProperty(Long propertyId);

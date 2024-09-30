@@ -433,11 +433,6 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<Booking> getBookingsBetweenDatesForTenant(Long tenantId, LocalDate startDate, LocalDate endDate) {
-        return bookingRepository.findByTenantIdAndCheckInDateBetween(tenantId, startDate, endDate);
-    }
-
-    @Override
     public List<Booking> getConfirmedBookingsBetweenDatesForTenant(Long tenantId, LocalDate startDate, LocalDate endDate) {
         return bookingRepository.findConfirmedBookingsBetweenDatesForTenant(tenantId, BookingStatus.CONFIRMED, startDate, endDate);
     }
