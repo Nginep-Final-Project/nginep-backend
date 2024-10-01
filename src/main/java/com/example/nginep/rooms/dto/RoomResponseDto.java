@@ -10,6 +10,8 @@ import java.util.List;
 public class RoomResponseDto {
     private Long id;
     private String name;
+    private String roomPicture;
+    private String roomPictureId;
     private String description;
     private Integer maxGuests;
     private BigDecimal basePrice;

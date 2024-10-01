@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -40,4 +41,44 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     @Query("SELECT b FROM Booking b WHERE b.user.id = :userId AND b.status = 'CONFIRMED' AND b.checkOutDate < CURRENT_DATE AND NOT EXISTS (SELECT r FROM Review r WHERE r.booking = b)")
     List<Booking> findUnreviewedBookingsForUser(@Param("userId") Long userId);
 
+    @Query("SELECT COALESCE(SUM(b.finalPrice), 0) FROM Booking b " +
+            "JOIN b.room r JOIN r.property p " +
+            "WHERE p.user.id = :tenantId AND b.status = 'CONFIRMED'")
+    BigDecimal calculateTotalEarningsByTenantId(@Param("tenantId") Long tenantId);
+
+    @Query("SELECT COUNT(b) FROM Booking b " +
+            "JOIN b.room r JOIN r.property p " +
+            "WHERE p.user.id = :tenantId AND b.status = 'CONFIRMED'")
+    Long countBookingsByTenantId(@Param("tenantId") Long tenantId);
+
+    @Query("SELECT b FROM Booking b " +
+            "JOIN b.room r " +
+            "JOIN r.property p " +
+            "WHERE p.user.id = :tenantId " +
+            "AND b.status = 'CONFIRMED'")
+    List<Booking> findConfirmedBookingsByTenant(@Param("tenantId") Long tenantId);
+
+    @Query("SELECT b FROM Booking b " +
+            "JOIN b.room r " +
+            "JOIN r.property p " +
+            "WHERE p.user.id = :tenantId " +
+            "AND b.status = :status " +
+            "AND b.checkInDate >= :startDate " +
+            "AND b.checkInDate <= :endDate")
+    List<Booking> findConfirmedBookingsBetweenDatesForTenant(
+            @Param("tenantId") Long tenantId,
+            @Param("status") BookingStatus status,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate);
+
+    List<Booking> findByRoomPropertyIdAndStatus(Long propertyId, BookingStatus status);
+
+    @Query("SELECT b FROM Booking b WHERE b.room.id = :roomId " +
+            "AND b.checkInDate <= :endDate AND b.checkOutDate >= :startDate " +
+            "AND b.status IN ('CONFIRMED', 'NOT_AVAILABLE')")
+    List<Booking> findConfirmedAndNotAvailableByRoomIdAndDateRange(
+            @Param("roomId") Long roomId,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate
+    );
 }

@@ -2,13 +2,14 @@ package com.example.nginep.rooms.controller;
 
 import com.example.nginep.rooms.dto.RoomRequestDto;
 import com.example.nginep.rooms.dto.RoomResponseDto;
+import com.example.nginep.rooms.dto.SearchAvailableRoomRequestDto;
+import com.example.nginep.rooms.entity.Room;
 import com.example.nginep.rooms.service.RoomService;
 import com.example.nginep.response.Response;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
@@ -36,5 +37,10 @@ public class RoomController {
     @DeleteMapping("/{roomId}")
     public ResponseEntity<Response<String>> deleteRoom(@PathVariable Long roomId) {
         return Response.successResponse("Delete room success", roomService.deleteRoom(roomId));
+    }
+
+    @PostMapping("/availability")
+    public ResponseEntity<Response<List<Room>>> searchRoom(@RequestBody SearchAvailableRoomRequestDto searchAvailableRoomRequestDto) {
+        return Response.successResponse("Search room success", roomService.searchRoomAvailable(searchAvailableRoomRequestDto));
     }
 }

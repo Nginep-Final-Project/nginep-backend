@@ -12,6 +12,9 @@ import com.example.nginep.payments.entity.Payment;
 import com.example.nginep.payments.enums.PaymentStatus;
 import com.example.nginep.payments.enums.PaymentType;
 import com.example.nginep.payments.service.PaymentService;
+import com.example.nginep.peakSeasonRates.dto.PeakSeasonRatesResponseDto;
+import com.example.nginep.peakSeasonRates.entity.PeakSeasonRates;
+import com.example.nginep.peakSeasonRates.service.PeakSeasonRatesService;
 import com.example.nginep.propertyImages.dto.PropertyImageResponseDto;
 import com.example.nginep.propertyImages.service.PropertyImageService;
 import com.example.nginep.rooms.entity.Room;
@@ -26,6 +29,7 @@ import org.springframework.stereotype.Service;
 import lombok.extern.slf4j.Slf4j;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
@@ -42,14 +46,16 @@ public class BookingServiceImpl implements BookingService {
     private final UsersService userService;
     private final TaskScheduler taskScheduler;
     private final PropertyImageService propertyImageService;
+    private final PeakSeasonRatesService peakSeasonRatesService;
 
-    public BookingServiceImpl(@Lazy BookingRepository bookingRepository, @Lazy RoomService roomService, PaymentService paymentService, UsersService userService, TaskScheduler taskScheduler, @Lazy PropertyImageService propertyImageService) {
+    public BookingServiceImpl(@Lazy BookingRepository bookingRepository, @Lazy RoomService roomService, @Lazy PaymentService paymentService, UsersService userService, TaskScheduler taskScheduler, @Lazy PropertyImageService propertyImageService, @Lazy PeakSeasonRatesService peakSeasonRatesService) {
         this.bookingRepository = bookingRepository;
         this.roomService = roomService;
         this.paymentService = paymentService;
         this.userService = userService;
         this.taskScheduler = taskScheduler;
         this.propertyImageService = propertyImageService;
+        this.peakSeasonRatesService = peakSeasonRatesService;
     }
 
     @Override
@@ -184,7 +190,7 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public Booking editNotAvailableBooking(CreateNotAvailableBookingDTO createNotAvailableBookingDTO) {
-        Booking booking = bookingRepository.findById(createNotAvailableBookingDTO.getId()).orElseThrow(()->new NotFoundException("Booking with id: " + createNotAvailableBookingDTO.getId() + " not found"));
+        Booking booking = bookingRepository.findById(createNotAvailableBookingDTO.getId()).orElseThrow(() -> new NotFoundException("Booking with id: " + createNotAvailableBookingDTO.getId() + " not found"));
         booking.setCheckInDate(createNotAvailableBookingDTO.getCheckInDate());
         booking.setCheckOutDate(createNotAvailableBookingDTO.getCheckOutDate());
         return bookingRepository.save(booking);
@@ -192,7 +198,7 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public String deleteNotAvailableBooking(Long bookingId) {
-        bookingRepository.findById(bookingId).orElseThrow(()->new NotFoundException("Booking with id: " + bookingId + " not found"));
+        bookingRepository.findById(bookingId).orElseThrow(() -> new NotFoundException("Booking with id: " + bookingId + " not found"));
         bookingRepository.deleteById(bookingId);
         return "Delete Booking with id " + bookingId + " success";
     }
@@ -296,6 +302,7 @@ public class BookingServiceImpl implements BookingService {
         BookingPaymentDetailsDto dto = new BookingPaymentDetailsDto();
         dto.setBookingId(booking.getId());
         dto.setRoomId(room.getId());
+        dto.setPaymentId(payment.getId());
         dto.setFinalPrice(booking.getFinalPrice());
         dto.setPaymentStatus(payment.getStatus());
         dto.setExpiryTime(payment.getExpiryTime());
@@ -376,5 +383,70 @@ public class BookingServiceImpl implements BookingService {
                 .findFirst()
                 .map(PropertyImageResponseDto::getPath)
                 .orElse(null);
+    }
+
+    @Override
+    public BigDecimal calculateTotalEarnings(Long tenantId) {
+        return bookingRepository.calculateTotalEarningsByTenantId(tenantId);
+    }
+
+    @Override
+    public Long countTotalBookings(Long tenantId) {
+        return bookingRepository.countBookingsByTenantId(tenantId);
+    }
+
+    @Override
+    public BigDecimal calculatePeakSeasonRevenueDifference(Long tenantId) {
+        List<Booking> bookings = bookingRepository.findConfirmedBookingsByTenant(tenantId);
+        BigDecimal revenueDifference = BigDecimal.ZERO;
+
+        for (Booking booking : bookings) {
+            List<PeakSeasonRatesResponseDto> peakSeasonRates = peakSeasonRatesService.getPeakSeasonRatesByPropertyId(booking.getRoom().getProperty().getId());
+
+            LocalDate currentDate = booking.getCheckInDate();
+            while (!currentDate.isAfter(booking.getCheckOutDate())) {
+                for (PeakSeasonRatesResponseDto peakSeason : peakSeasonRates) {
+                    if (currentDate.isEqual(peakSeason.getPeakSeasonDates().getFrom()) ||
+                            (currentDate.isAfter(peakSeason.getPeakSeasonDates().getFrom()) &&
+                                    currentDate.isBefore(peakSeason.getPeakSeasonDates().getTo())) ||
+                            currentDate.isEqual(peakSeason.getPeakSeasonDates().getTo())) {
+
+                        BigDecimal basePrice = booking.getRoom().getBasePrice();
+                        BigDecimal peakSeasonPrice = calculatePeakSeasonPrice(basePrice, peakSeason);
+                        revenueDifference = revenueDifference.add(peakSeasonPrice.subtract(basePrice));
+                        break;
+                    }
+                }
+                currentDate = currentDate.plusDays(1);
+            }
+        }
+
+        return revenueDifference;
+    }
+
+    private BigDecimal calculatePeakSeasonPrice(BigDecimal basePrice, PeakSeasonRatesResponseDto peakSeason) {
+        if (peakSeason.getRateType() == PeakSeasonRates.RateType.PERCENTAGE) {
+            BigDecimal percentage = BigDecimal.ONE.add(peakSeason.getRateValue().divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP));
+            return basePrice.multiply(percentage);
+        } else {
+            return basePrice.add(peakSeason.getRateValue());
+        }
+    }
+
+    @Override
+    public List<Booking> getConfirmedBookingsBetweenDatesForTenant(Long tenantId, LocalDate startDate, LocalDate endDate) {
+        return bookingRepository.findConfirmedBookingsBetweenDatesForTenant(tenantId, BookingStatus.CONFIRMED, startDate, endDate);
+    }
+
+    @Override
+    public BigDecimal calculateTotalEarningsForProperty(Long propertyId) {
+        return bookingRepository.findByRoomPropertyIdAndStatus(propertyId, BookingStatus.CONFIRMED).stream()
+                .map(Booking::getFinalPrice)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    @Override
+    public List<Booking> getBookingsForRoomInDateRange(Long roomId, LocalDate startDate, LocalDate endDate) {
+        return bookingRepository.findConfirmedAndNotAvailableByRoomIdAndDateRange(roomId, startDate, endDate);
     }
 }

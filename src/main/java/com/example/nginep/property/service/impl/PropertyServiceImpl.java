@@ -17,6 +17,7 @@ import com.example.nginep.propertyImages.dto.PropertyImageRequestDto;
 import com.example.nginep.propertyImages.service.PropertyImageService;
 import com.example.nginep.reviews.service.ReviewService;
 import com.example.nginep.rooms.dto.RoomRequestDto;
+import com.example.nginep.rooms.dto.SearchAvailableRoomRequestDto;
 import com.example.nginep.rooms.service.RoomService;
 import com.example.nginep.users.entity.Users;
 import com.example.nginep.users.service.UsersService;
@@ -165,6 +166,13 @@ public class PropertyServiceImpl implements PropertyService {
     @Override
     public DetailPropertyResponseDto getDetailProperty(Long propertyId) {
         Property property = getPropertyById(propertyId);
+
+        SearchAvailableRoomRequestDto requestSearchRoom = new SearchAvailableRoomRequestDto();
+        requestSearchRoom.setStartDate(LocalDate.now());
+        requestSearchRoom.setEndDate(LocalDate.now().plusDays(1));
+        requestSearchRoom.setTotalGuest(1);
+        requestSearchRoom.setPropertyId(propertyId);
+
         DetailPropertyResponseDto detail = new DetailPropertyResponseDto();
         detail.setId(property.getId());
         detail.setPropertyName(property.getPropertyName());
@@ -179,7 +187,7 @@ public class PropertyServiceImpl implements PropertyService {
         detail.setPropertyPostalCode(property.getPropertyPostalCode());
         detail.setPropertyLatitude(property.getPropertyLatitude());
         detail.setPropertyLongitude(property.getPropertyLongitude());
-        detail.setRooms(roomService.getRoomByPropertyId(property.getId()));
+        detail.setRooms(roomService.searchRoomAvailable(requestSearchRoom));
         detail.setPeakSeasonRate(peakSeasonRatesService.getPeakSeasonRatesByPropertyId(property.getId()));
         detail.setTenant(usersService.getDetailUser(property.getUser().getEmail()));
         detail.setReviewSummary(reviewService.getPropertyReviewSummary(property.getId()));
@@ -227,5 +235,10 @@ public class PropertyServiceImpl implements PropertyService {
         response.setRooms(roomService.getRoomByPropertyId(property.getId()));
         response.setRating(reviewService.getPropertyReviewSummary(property.getId()).getAverageRating());
         return response;
+    }
+
+    @Override
+    public Long countPropertiesByTenant(Long tenantId) {
+        return propertyRepository.countPropertiesByTenantId(tenantId);
     }
 }

@@ -11,6 +11,7 @@ import java.time.Instant;
 public class BookingPaymentDetailsDto {
     private Long bookingId;
     private Long roomId;
+    private Long paymentId;
     private BigDecimal finalPrice;
     private PaymentStatus paymentStatus;
     private Instant expiryTime;
