@@ -15,6 +15,8 @@ import com.example.nginep.payments.repository.PaymentRepository;
 import com.example.nginep.payments.service.PaymentService;
 import lombok.RequiredArgsConstructor;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -31,6 +33,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class PaymentServiceImpl implements PaymentService {
 
+    private static final Logger log = LoggerFactory.getLogger(PaymentServiceImpl.class);
     private final PaymentRepository paymentRepository;
     private final CloudinaryService cloudinaryService;
     private final MidtransService midtransService;
@@ -133,6 +136,7 @@ public class PaymentServiceImpl implements PaymentService {
         CloudinaryUploadResponseDto uploadResult = cloudinaryService.uploadImage(uploadProofOfPaymentDTO.getProofOfPayment());
         payment.setProofOfPayment(uploadResult.getUrl());
         payment.setStatus(PaymentStatus.AWAITING_CONFIRMATION);
+        payment.getBooking().setStatus(BookingStatus.AWAITING_CONFIRMATION);
         payment.setPaidAt(Instant.now());
         payment.setAttempts(payment.getAttempts() + 1);
 

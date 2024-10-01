@@ -302,6 +302,7 @@ public class BookingServiceImpl implements BookingService {
         BookingPaymentDetailsDto dto = new BookingPaymentDetailsDto();
         dto.setBookingId(booking.getId());
         dto.setRoomId(room.getId());
+        dto.setPaymentId(payment.getId());
         dto.setFinalPrice(booking.getFinalPrice());
         dto.setPaymentStatus(payment.getStatus());
         dto.setExpiryTime(payment.getExpiryTime());
