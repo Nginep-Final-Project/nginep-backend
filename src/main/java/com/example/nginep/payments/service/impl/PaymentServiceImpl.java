@@ -199,6 +199,7 @@ public class PaymentServiceImpl implements PaymentService {
         } else {
             payment.setPaidAt(null);
             payment.setStatus(PaymentStatus.REJECTED);
+            payment.getBooking().setStatus(BookingStatus.PENDING_PAYMENT);
             payment.setExpiryTime(Instant.now().plus(1, ChronoUnit.HOURS));
         }
 
