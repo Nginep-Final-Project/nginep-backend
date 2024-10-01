@@ -72,4 +72,13 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             @Param("endDate") LocalDate endDate);
 
     List<Booking> findByRoomPropertyIdAndStatus(Long propertyId, BookingStatus status);
+
+    @Query("SELECT b FROM Booking b WHERE b.room.id = :roomId " +
+            "AND b.checkInDate <= :endDate AND b.checkOutDate >= :startDate " +
+            "AND b.status IN ('CONFIRMED', 'NOT_AVAILABLE')")
+    List<Booking> findConfirmedAndNotAvailableByRoomIdAndDateRange(
+            @Param("roomId") Long roomId,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate
+    );
 }

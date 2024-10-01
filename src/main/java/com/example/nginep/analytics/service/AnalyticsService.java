@@ -3,6 +3,7 @@ package com.example.nginep.analytics.service;
 import com.example.nginep.analytics.dto.EarningsByPropertyDto;
 import com.example.nginep.analytics.dto.EarningsByTransactionDto;
 import com.example.nginep.analytics.dto.OverviewReportDto;
+import com.example.nginep.analytics.dto.PropertyAvailabilityDto;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -22,4 +23,6 @@ public interface AnalyticsService {
     EarningsByTransactionDto getEarningsByTransaction(Long tenantId, String interval, LocalDate startDate, LocalDate endDate);
 
     List<EarningsByPropertyDto> getEarningsByProperty(Long tenantId);
+
+    List<PropertyAvailabilityDto> getPropertyAvailability(Long tenantId, LocalDate startDate, LocalDate endDate);
 }
