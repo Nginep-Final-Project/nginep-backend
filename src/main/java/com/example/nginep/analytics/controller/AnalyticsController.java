@@ -3,6 +3,7 @@ package com.example.nginep.analytics.controller;
 import com.example.nginep.analytics.dto.EarningsByPropertyDto;
 import com.example.nginep.analytics.dto.EarningsByTransactionDto;
 import com.example.nginep.analytics.dto.OverviewReportDto;
+import com.example.nginep.analytics.dto.PropertyAvailabilityDto;
 import com.example.nginep.analytics.service.AnalyticsService;
 import com.example.nginep.response.Response;
 import lombok.RequiredArgsConstructor;
@@ -40,5 +41,14 @@ public class AnalyticsController {
     public ResponseEntity<Response<List<EarningsByPropertyDto>>> getEarningsByProperty(@PathVariable Long tenantId) {
         List<EarningsByPropertyDto> earningsByProperty = analyticsService.getEarningsByProperty(tenantId);
         return Response.successResponse("Earnings by property retrieved successfully", earningsByProperty);
+    }
+
+    @GetMapping("/property-availability/{tenantId}")
+    public ResponseEntity<Response<List<PropertyAvailabilityDto>>> getPropertyAvailability(
+            @PathVariable Long tenantId,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+        List<PropertyAvailabilityDto> availability = analyticsService.getPropertyAvailability(tenantId, startDate, endDate);
+        return Response.successResponse("Property availability data retrieved successfully", availability);
     }
 }
