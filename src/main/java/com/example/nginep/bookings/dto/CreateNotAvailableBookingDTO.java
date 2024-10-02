@@ -14,8 +14,8 @@ public class CreateNotAvailableBookingDTO {
     private Long id;
     private Users user;
     private Room room;
-    private LocalDate checkInDate;
-    private LocalDate checkOutDate;
+    private LocalDate from;
+    private LocalDate to;
     private BigDecimal finalPrice;
     private Integer numGuests;
 
@@ -23,8 +23,8 @@ public class CreateNotAvailableBookingDTO {
         Booking newBooking = new Booking();
         newBooking.setUser(user);
         newBooking.setRoom(room);
-        newBooking.setCheckInDate(checkInDate);
-        newBooking.setCheckOutDate(checkOutDate);
+        newBooking.setCheckInDate(from);
+        newBooking.setCheckOutDate(to);
         newBooking.setFinalPrice(finalPrice);
         newBooking.setNumGuests(numGuests);
         newBooking.setStatus(BookingStatus.NOT_AVAILABLE);

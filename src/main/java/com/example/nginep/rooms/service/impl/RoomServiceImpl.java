@@ -48,8 +48,8 @@ public class RoomServiceImpl implements RoomService {
             CreateNotAvailableBookingDTO newBooking = new CreateNotAvailableBookingDTO();
             newBooking.setUser(property.getUser());
             newBooking.setRoom(newRoom);
-            newBooking.setCheckInDate(notAvailableBookingDTO.getCheckInDate());
-            newBooking.setCheckOutDate(notAvailableBookingDTO.getCheckOutDate());
+            newBooking.setFrom(notAvailableBookingDTO.getFrom());
+            newBooking.setTo(notAvailableBookingDTO.getTo());
             newBooking.setFinalPrice(newRoom.getBasePrice());
             newBooking.setNumGuests(newRoom.getMaxGuests());
             bookingService.createNotAvailableBooking(newBooking);

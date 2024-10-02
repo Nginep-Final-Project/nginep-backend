@@ -13,7 +13,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
-import java.util.List;
 
 @RestController
 @RequestMapping("api/v1/property")
@@ -46,10 +45,13 @@ public class PropertyController {
         return Response.successResponse("Delete property success", propertyService.deleteProperty(propertyId));
     }
 
-    @GetMapping("/tenant/{tenantId}")
-    public ResponseEntity<Response<List
-            <PropertyResponseDto>>> getPropertiesByTenantId(@PathVariable Long tenantId) {
-        List<PropertyResponseDto> properties = propertyService.getPropertyByTenantId(tenantId);
+    @GetMapping("/tenant")
+    public ResponseEntity<Response<Page
+            <PropertyResponseDto>>> getPropertiesByTenantId(@RequestParam Long tenantId,
+                                                            @RequestParam(defaultValue = "0") int page,
+                                                            @RequestParam(defaultValue = "12") int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Page<PropertyResponseDto> properties = propertyService.getPropertyByTenantId(tenantId, pageable);
         return Response.successResponse("Properties retrieved successfully", properties);
     }
 

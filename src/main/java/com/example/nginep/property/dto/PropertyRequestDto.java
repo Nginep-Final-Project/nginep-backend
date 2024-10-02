@@ -26,7 +26,6 @@ public class PropertyRequestDto {
     private Double propertyLongitude;
     private List<RoomRequestDto> rooms;
     private List<PeakSeasonRatesRequestDto> peakSeasonRates;
-    private Long tenantId;
 
     public Property toEntity(Users user){
         Property newProperty = new Property();

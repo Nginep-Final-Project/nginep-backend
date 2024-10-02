@@ -185,8 +185,8 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public Booking editNotAvailableBooking(CreateNotAvailableBookingDTO createNotAvailableBookingDTO) {
         Booking booking = bookingRepository.findById(createNotAvailableBookingDTO.getId()).orElseThrow(()->new NotFoundException("Booking with id: " + createNotAvailableBookingDTO.getId() + " not found"));
-        booking.setCheckInDate(createNotAvailableBookingDTO.getCheckInDate());
-        booking.setCheckOutDate(createNotAvailableBookingDTO.getCheckOutDate());
+        booking.setCheckInDate(createNotAvailableBookingDTO.getFrom());
+        booking.setCheckOutDate(createNotAvailableBookingDTO.getTo());
         return bookingRepository.save(booking);
     }
 
