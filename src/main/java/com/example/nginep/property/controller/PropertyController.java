@@ -13,6 +13,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @RestController
 @RequestMapping("api/v1/property")
@@ -45,13 +46,10 @@ public class PropertyController {
         return Response.successResponse("Delete property success", propertyService.deleteProperty(propertyId));
     }
 
-    @GetMapping("/tenant")
-    public ResponseEntity<Response<Page
-            <PropertyResponseDto>>> getPropertiesByTenantId(@RequestParam Long tenantId,
-                                                            @RequestParam(defaultValue = "0") int page,
-                                                            @RequestParam(defaultValue = "12") int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
-        Page<PropertyResponseDto> properties = propertyService.getPropertyByTenantId(tenantId, pageable);
+    @GetMapping("/tenant/{tenantId}")
+    public ResponseEntity<Response<List
+            <PropertyResponseDto>>> getPropertiesByTenantId(@PathVariable Long tenantId) {
+        List<PropertyResponseDto> properties = propertyService.getPropertyByTenantId(tenantId);
         return Response.successResponse("Properties retrieved successfully", properties);
     }
 
@@ -77,6 +75,15 @@ public class PropertyController {
     @GetMapping("/home")
     public ResponseEntity<Response<HomeResponseDto>> getHomeData() {
         return Response.successResponse("Get home data success", propertyService.getHomeData());
+    }
+
+    @GetMapping("/list")
+    public ResponseEntity<Response<Page
+            <PropertyResponseDto>>> getPropertyList( @RequestParam(defaultValue = "0") int page,
+                                                     @RequestParam(defaultValue = "12") int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Page<PropertyResponseDto> properties = propertyService.getPropertyList(pageable);
+        return Response.successResponse("Property with tenant id success", properties);
     }
 
 

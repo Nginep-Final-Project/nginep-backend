@@ -124,8 +124,8 @@ public class PropertyServiceImpl implements PropertyService {
     }
 
     @Override
-    public Page<PropertyResponseDto> getPropertyByTenantId(Long tenantId, Pageable pageable) {
-        return propertyRepository.findAllByUserId(tenantId, pageable).map(this::mapToPropertyResponseDto);
+    public List<PropertyResponseDto> getPropertyByTenantId(Long tenantId) {
+        return propertyRepository.findAllByUserId(tenantId).stream().map(this::mapToPropertyResponseDto).toList();
     }
 
     @Override
@@ -245,5 +245,14 @@ public class PropertyServiceImpl implements PropertyService {
     @Override
     public Long countPropertiesByTenant(Long tenantId) {
         return propertyRepository.countPropertiesByTenantId(tenantId);
+    }
+
+    @Override
+    public Page<PropertyResponseDto> getPropertyList(Pageable pageable) {
+        var claims = Claims.getClaimsFromJwt();
+        var email = (String) claims.get("sub");
+        log.info("email Profile>>>>  " + email);
+        Users user = usersService.getDetailUserByEmail(email);
+        return propertyRepository.findAllByUserId(user.getId(), pageable).map(this::mapToPropertyResponseDto);
     }
 }

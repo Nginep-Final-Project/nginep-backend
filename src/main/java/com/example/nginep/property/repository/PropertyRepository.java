@@ -13,11 +13,13 @@ import java.util.List;
 
 @Repository
 public interface PropertyRepository extends JpaRepository<Property, Long>, JpaSpecificationExecutor<Property> {
-    Page<Property> findAllByUserId(Long tenantId, Pageable pageable);
+    List<Property> findAllByUserId(Long tenantId);
 
     @Query("SELECT DISTINCT p.propertyCity FROM Property p")
     List<String> findDistinctCities();
 
     @Query("SELECT COUNT(p) FROM Property p WHERE p.user.id = :tenantId")
     Long countPropertiesByTenantId(@Param("tenantId") Long tenantId);
+
+    Page<Property> findAllByUserId(Long tenantId, Pageable pageable);
 }

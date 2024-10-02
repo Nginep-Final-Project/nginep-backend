@@ -13,7 +13,7 @@ public interface PropertyService {
 
     PropertyResponseDto updateProperty(PropertyRequestDto propertyRequestDto);
 
-    Page<PropertyResponseDto> getPropertyByTenantId(Long tenantId, Pageable pageable);
+    List<PropertyResponseDto> getPropertyByTenantId(Long tenantId);
 
     Page<SearchResponseDto> getAllProperty(Pageable pageable, String propertyName, String propertyCategory, String propertyCity, LocalDate checkInDate, LocalDate checkOutDate, Integer totalGuests);
 
@@ -28,4 +28,6 @@ public interface PropertyService {
     String deleteProperty(Long propertyId);
 
     Long countPropertiesByTenant(Long tenantId);
+
+    Page<PropertyResponseDto> getPropertyList(Pageable pageable);
 }
