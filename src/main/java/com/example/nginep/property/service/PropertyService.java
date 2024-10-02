@@ -26,4 +26,6 @@ public interface PropertyService {
     DetailPropertyResponseDto getDetailProperty(Long propertyId);
 
     String deleteProperty(Long propertyId);
+
+    Long countPropertiesByTenant(Long tenantId);
 }

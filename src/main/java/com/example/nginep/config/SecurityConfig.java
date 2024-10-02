@@ -101,6 +101,7 @@ public class SecurityConfig {
                     auth.requestMatchers("/api/v1/reviews/**").permitAll();
                     auth.requestMatchers("/api/v1/review-replies/**").permitAll();
                     auth.requestMatchers(HttpMethod.POST,"/api/v1/rooms/availability").permitAll();
+                    auth.requestMatchers("/api/v1/analytics/**").permitAll();
                     auth.anyRequest().authenticated();
                 })
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
