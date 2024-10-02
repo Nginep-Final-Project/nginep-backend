@@ -52,4 +52,6 @@ public interface BookingService {
     List<Booking> getConfirmedBookingsBetweenDatesForTenant(Long tenantId, LocalDate startDate, LocalDate endDate);
 
     BigDecimal calculateTotalEarningsForProperty(Long propertyId);
+
+    List<Booking> getBookingsForRoomInDateRange(Long roomId, LocalDate startDate, LocalDate endDate);
 }

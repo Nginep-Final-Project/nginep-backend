@@ -302,6 +302,7 @@ public class BookingServiceImpl implements BookingService {
         BookingPaymentDetailsDto dto = new BookingPaymentDetailsDto();
         dto.setBookingId(booking.getId());
         dto.setRoomId(room.getId());
+        dto.setPaymentId(payment.getId());
         dto.setFinalPrice(booking.getFinalPrice());
         dto.setPaymentStatus(payment.getStatus());
         dto.setExpiryTime(payment.getExpiryTime());
@@ -442,5 +443,10 @@ public class BookingServiceImpl implements BookingService {
         return bookingRepository.findByRoomPropertyIdAndStatus(propertyId, BookingStatus.CONFIRMED).stream()
                 .map(Booking::getFinalPrice)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    @Override
+    public List<Booking> getBookingsForRoomInDateRange(Long roomId, LocalDate startDate, LocalDate endDate) {
+        return bookingRepository.findConfirmedAndNotAvailableByRoomIdAndDateRange(roomId, startDate, endDate);
     }
 }

@@ -3,6 +3,7 @@ package com.example.nginep.analytics.service.impl;
 import com.example.nginep.analytics.dto.EarningsByPropertyDto;
 import com.example.nginep.analytics.dto.EarningsByTransactionDto;
 import com.example.nginep.analytics.dto.OverviewReportDto;
+import com.example.nginep.analytics.dto.PropertyAvailabilityDto;
 import com.example.nginep.analytics.service.AnalyticsService;
 import com.example.nginep.bookings.entity.Booking;
 import com.example.nginep.bookings.service.BookingService;
@@ -107,5 +108,38 @@ public class AnalyticsServiceImpl implements AnalyticsService {
                 })
                 .sorted(Comparator.comparing(EarningsByPropertyDto::getEarnings).reversed())
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<PropertyAvailabilityDto> getPropertyAvailability(Long tenantId, LocalDate startDate, LocalDate endDate) {
+        List<PropertyResponseDto> properties = propertyService.getPropertyByTenantId(tenantId);
+
+        return properties.stream().map(property -> {
+            PropertyAvailabilityDto availabilityDto = new PropertyAvailabilityDto();
+            availabilityDto.setPropertyId(property.getId());
+            availabilityDto.setPropertyName(property.getPropertyName());
+
+            List<PropertyAvailabilityDto.RoomAvailabilityDto> roomAvailabilities = property.getRooms().stream().map(room -> {
+                PropertyAvailabilityDto.RoomAvailabilityDto roomAvailability = new PropertyAvailabilityDto.RoomAvailabilityDto();
+                roomAvailability.setRoomId(room.getId());
+                roomAvailability.setRoomName(room.getName());
+
+                List<Booking> bookings = bookingService.getBookingsForRoomInDateRange(room.getId(), startDate, endDate);
+                List<PropertyAvailabilityDto.UnavailableDateRangeDto> unavailableDates = bookings.stream()
+                        .map(booking -> {
+                            PropertyAvailabilityDto.UnavailableDateRangeDto dateRange = new PropertyAvailabilityDto.UnavailableDateRangeDto();
+                            dateRange.setStartDate(booking.getCheckInDate().toString());
+                            dateRange.setEndDate(booking.getCheckOutDate().toString());
+                            return dateRange;
+                        })
+                        .collect(Collectors.toList());
+
+                roomAvailability.setUnavailableDates(unavailableDates);
+                return roomAvailability;
+            }).collect(Collectors.toList());
+
+            availabilityDto.setRooms(roomAvailabilities);
+            return availabilityDto;
+        }).collect(Collectors.toList());
     }
 }
