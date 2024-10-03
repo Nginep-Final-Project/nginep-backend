@@ -5,7 +5,8 @@ import com.example.nginep.bookings.entity.Booking;
 import com.example.nginep.bookings.enums.BookingStatus;
 import com.example.nginep.bookings.repository.BookingRepository;
 import com.example.nginep.bookings.service.BookingService;
-import com.example.nginep.bookings.tasks.BookingCancellationTask;
+import com.example.nginep.bookings.tasks.CancelUnconfirmedBookingTask;
+import com.example.nginep.bookings.tasks.CancelUnpaidBookingTask;
 import com.example.nginep.exceptions.applicationException.ApplicationException;
 import com.example.nginep.exceptions.notFoundException.NotFoundException;
 import com.example.nginep.payments.entity.Payment;
@@ -47,8 +48,10 @@ public class BookingServiceImpl implements BookingService {
     private final TaskScheduler taskScheduler;
     private final PropertyImageService propertyImageService;
     private final PeakSeasonRatesService peakSeasonRatesService;
+    private final CancelUnpaidBookingTask cancelUnpaidBookingTask;
+    private final CancelUnconfirmedBookingTask cancelUnconfirmedBookingTask;
 
-    public BookingServiceImpl(@Lazy BookingRepository bookingRepository, @Lazy RoomService roomService, @Lazy PaymentService paymentService, UsersService userService, TaskScheduler taskScheduler, @Lazy PropertyImageService propertyImageService, @Lazy PeakSeasonRatesService peakSeasonRatesService) {
+    public BookingServiceImpl(@Lazy BookingRepository bookingRepository, @Lazy RoomService roomService, @Lazy PaymentService paymentService, UsersService userService, TaskScheduler taskScheduler, @Lazy PropertyImageService propertyImageService, @Lazy PeakSeasonRatesService peakSeasonRatesService, @Lazy CancelUnpaidBookingTask cancelUnpaidBookingTask, @Lazy CancelUnconfirmedBookingTask cancelUnconfirmedBookingTask) {
         this.bookingRepository = bookingRepository;
         this.roomService = roomService;
         this.paymentService = paymentService;
@@ -56,6 +59,8 @@ public class BookingServiceImpl implements BookingService {
         this.taskScheduler = taskScheduler;
         this.propertyImageService = propertyImageService;
         this.peakSeasonRatesService = peakSeasonRatesService;
+        this.cancelUnpaidBookingTask = cancelUnpaidBookingTask;
+        this.cancelUnconfirmedBookingTask = cancelUnconfirmedBookingTask;
     }
 
     @Override
@@ -81,7 +86,7 @@ public class BookingServiceImpl implements BookingService {
 
         Booking savedBooking = bookingRepository.save(booking);
 
-        scheduleCancellationTask(savedBooking.getId());
+        scheduleUnpaidBookingCancellation(savedBooking.getId());
 
         return savedBooking;
     }
@@ -339,17 +344,16 @@ public class BookingServiceImpl implements BookingService {
                 .orElse(null);
     }
 
-    private void scheduleCancellationTask(Long bookingId) {
-        BookingCancellationTask task = new BookingCancellationTask(this);
-        task.setBookingId(bookingId);
-        taskScheduler.schedule(task, Instant.now().plus(1, ChronoUnit.HOURS));
+    private void scheduleUnpaidBookingCancellation(Long bookingId) {
+        cancelUnpaidBookingTask.setBookingId(bookingId);
+        taskScheduler.schedule(cancelUnpaidBookingTask, Instant.now().plus(1, ChronoUnit.HOURS));
     }
 
     @Override
     @Transactional
     public void cancelBookingIfPending(Long bookingId) {
         Booking booking = findBookingById(bookingId);
-        if (booking.getStatus() == BookingStatus.PENDING_PAYMENT) {
+        if (booking.getStatus() == BookingStatus.PENDING_PAYMENT && booking.getPayment().getAttempts() == 0) {
             booking.setStatus(BookingStatus.CANCELLED);
             Payment payment = booking.getPayment();
             if (payment != null) {
@@ -448,5 +452,25 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public List<Booking> getBookingsForRoomInDateRange(Long roomId, LocalDate startDate, LocalDate endDate) {
         return bookingRepository.findConfirmedAndNotAvailableByRoomIdAndDateRange(roomId, startDate, endDate);
+    }
+
+    @Override
+    public void scheduleUnconfirmedBookingCancellation(Long bookingId) {
+        cancelUnconfirmedBookingTask.setBookingId(bookingId);
+        taskScheduler.schedule(cancelUnconfirmedBookingTask,
+                Instant.now().plus(48, ChronoUnit.HOURS));
+    }
+
+
+    @Override
+    @Transactional
+    public void cancelBookingIfNotConfirmed(Long bookingId) {
+        Booking booking = findBookingById(bookingId);
+        if (booking.getStatus() == BookingStatus.AWAITING_CONFIRMATION) {
+            booking.setStatus(BookingStatus.CANCELLED);
+            bookingRepository.save(booking);
+
+            //How do we refund the paid booking? dang
+        }
     }
 }
