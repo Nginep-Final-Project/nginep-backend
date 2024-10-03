@@ -54,4 +54,8 @@ public interface BookingService {
     BigDecimal calculateTotalEarningsForProperty(Long propertyId);
 
     List<Booking> getBookingsForRoomInDateRange(Long roomId, LocalDate startDate, LocalDate endDate);
+
+    void cancelBookingIfNotConfirmed(Long bookingId);
+
+    void scheduleUnconfirmedBookingCancellation(Long bookingId);
 }

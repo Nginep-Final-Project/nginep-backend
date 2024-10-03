@@ -25,4 +25,5 @@ public interface PaymentService {
 
     Payment updatePaymentStatusMidtrans(String orderId, String transactionStatus, String fraudStatus);
 
+    void cancelUnconfirmedManualPayment(Long paymentId);
 }

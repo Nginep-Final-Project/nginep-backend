@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 @Component
 @Data
 @RequiredArgsConstructor
-public class BookingCancellationTask implements Runnable {
+public class CancelUnpaidBookingTask implements Runnable {
     private final BookingService bookingService;
     private Long bookingId;
 
