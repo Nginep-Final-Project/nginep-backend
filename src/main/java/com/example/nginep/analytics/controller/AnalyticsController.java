@@ -21,34 +21,32 @@ public class AnalyticsController {
 
     private final AnalyticsService analyticsService;
 
-    @GetMapping("/overview/{tenantId}")
-    public ResponseEntity<Response<OverviewReportDto>> getOverviewReport(@PathVariable Long tenantId) {
-        OverviewReportDto report = analyticsService.getOverviewReport(tenantId);
+    @GetMapping("/overview")
+    public ResponseEntity<Response<OverviewReportDto>> getOverviewReport() {
+        OverviewReportDto report = analyticsService.getOverviewReport();
         return Response.successResponse("Overview report retrieved successfully", report);
     }
 
-    @GetMapping("/earnings/transaction/{tenantId}")
+    @GetMapping("/earnings/transaction")
     public ResponseEntity<Response<EarningsByTransactionDto>> getEarnings(
-            @PathVariable Long tenantId,
             @RequestParam String interval,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
-        EarningsByTransactionDto earnings = analyticsService.getEarningsByTransaction(tenantId, interval, startDate, endDate);
+        EarningsByTransactionDto earnings = analyticsService.getEarningsByTransaction(interval, startDate, endDate);
         return Response.successResponse("Earnings data retrieved successfully", earnings);
     }
 
-    @GetMapping("/earnings/property/{tenantId}")
-    public ResponseEntity<Response<List<EarningsByPropertyDto>>> getEarningsByProperty(@PathVariable Long tenantId) {
-        List<EarningsByPropertyDto> earningsByProperty = analyticsService.getEarningsByProperty(tenantId);
+    @GetMapping("/earnings/property")
+    public ResponseEntity<Response<List<EarningsByPropertyDto>>> getEarningsByProperty() {
+        List<EarningsByPropertyDto> earningsByProperty = analyticsService.getEarningsByProperty();
         return Response.successResponse("Earnings by property retrieved successfully", earningsByProperty);
     }
 
-    @GetMapping("/property-availability/{tenantId}")
+    @GetMapping("/property-availability")
     public ResponseEntity<Response<List<PropertyAvailabilityDto>>> getPropertyAvailability(
-            @PathVariable Long tenantId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
-        List<PropertyAvailabilityDto> availability = analyticsService.getPropertyAvailability(tenantId, startDate, endDate);
+        List<PropertyAvailabilityDto> availability = analyticsService.getPropertyAvailability(startDate, endDate);
         return Response.successResponse("Property availability data retrieved successfully", availability);
     }
 }

@@ -14,7 +14,7 @@ public interface ReviewService {
 
     ReviewDto createReview(CreateReviewDto createReviewDto);
 
-    List<ReviewDto> getUserReviews(Long userId);
+    List<ReviewDto> getUserReviews();
 
     Review findReviewById(Long reviewId);
 

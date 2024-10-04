@@ -32,15 +32,15 @@ public class ReviewController {
         return Response.successResponse("Top reviews retrieved successfully", topReviews);
     }
 
-    @PostMapping
+    @PostMapping("/create")
     public ResponseEntity<Response<ReviewDto>> createReview(@RequestBody CreateReviewDto createReviewDto) {
         ReviewDto createdReview = reviewService.createReview(createReviewDto);
         return Response.successResponse("Review created successfully", createdReview);
     }
 
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<Response<List<ReviewDto>>> getUserReviews(@PathVariable Long userId) {
-        List<ReviewDto> userReviews = reviewService.getUserReviews(userId);
+    @GetMapping("/user")
+    public ResponseEntity<Response<List<ReviewDto>>> getUserReviews() {
+        List<ReviewDto> userReviews = reviewService.getUserReviews();
         return Response.successResponse("User reviews retrieved successfully", userReviews);
     }
 

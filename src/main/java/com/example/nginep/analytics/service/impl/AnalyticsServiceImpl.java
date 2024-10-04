@@ -5,11 +5,14 @@ import com.example.nginep.analytics.dto.EarningsByTransactionDto;
 import com.example.nginep.analytics.dto.OverviewReportDto;
 import com.example.nginep.analytics.dto.PropertyAvailabilityDto;
 import com.example.nginep.analytics.service.AnalyticsService;
+import com.example.nginep.auth.helpers.Claims;
 import com.example.nginep.bookings.entity.Booking;
 import com.example.nginep.bookings.service.BookingService;
 import com.example.nginep.property.dto.PropertyResponseDto;
 import com.example.nginep.property.entity.Property;
 import com.example.nginep.property.service.PropertyService;
+import com.example.nginep.users.entity.Users;
+import com.example.nginep.users.service.UsersService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -27,40 +30,42 @@ public class AnalyticsServiceImpl implements AnalyticsService {
 
     private final BookingService bookingService;
     private final PropertyService propertyService;
+    private final UsersService usersService;
 
     @Override
-    public BigDecimal calculateTotalEarnings(Long tenantId) {
-        return bookingService.calculateTotalEarnings(tenantId);
+    public BigDecimal calculateTotalEarnings() {
+        return bookingService.calculateTotalEarnings();
     }
 
     @Override
-    public Long calculateTotalBookings(Long tenantId) {
-        return bookingService.countTotalBookings(tenantId);
+    public Long calculateTotalBookings() {
+        return bookingService.countTotalBookings();
     }
 
     @Override
-    public Long calculateTotalProperties(Long tenantId) {
-        return propertyService.countPropertiesByTenant(tenantId);
+    public Long calculateTotalProperties() {
+        Users user = getCurrentUser();
+        return propertyService.countPropertiesByTenant(user.getId());
     }
 
     @Override
-    public BigDecimal calculatePeakSeasonRevenueDifference(Long tenantId) {
-        return bookingService.calculatePeakSeasonRevenueDifference(tenantId);
+    public BigDecimal calculatePeakSeasonRevenueDifference() {
+        return bookingService.calculatePeakSeasonRevenueDifference();
     }
 
     @Override
-    public OverviewReportDto getOverviewReport(Long tenantId) {
+    public OverviewReportDto getOverviewReport() {
         OverviewReportDto report = new OverviewReportDto();
-        report.setTotalEarnings(calculateTotalEarnings(tenantId));
-        report.setTotalBookings(calculateTotalBookings(tenantId));
-        report.setTotalProperties(calculateTotalProperties(tenantId));
-        report.setPeakSeasonRevenueDifference(calculatePeakSeasonRevenueDifference(tenantId));
+        report.setTotalEarnings(calculateTotalEarnings());
+        report.setTotalBookings(calculateTotalBookings());
+        report.setTotalProperties(calculateTotalProperties());
+        report.setPeakSeasonRevenueDifference(calculatePeakSeasonRevenueDifference());
         return report;
     }
 
     @Override
-    public EarningsByTransactionDto getEarningsByTransaction(Long tenantId, String interval, LocalDate startDate, LocalDate endDate) {
-        List<Booking> bookings = bookingService.getConfirmedBookingsBetweenDatesForTenant(tenantId, startDate, endDate);
+    public EarningsByTransactionDto getEarningsByTransaction(String interval, LocalDate startDate, LocalDate endDate) {
+        List<Booking> bookings = bookingService.getConfirmedBookingsBetweenDatesForTenant(startDate, endDate);
 
         Map<LocalDate, BigDecimal> earningsByDate = bookings.stream()
                 .collect(Collectors.groupingBy(
@@ -99,8 +104,9 @@ public class AnalyticsServiceImpl implements AnalyticsService {
     }
 
     @Override
-    public List<EarningsByPropertyDto> getEarningsByProperty(Long tenantId) {
-        List<PropertyResponseDto> properties = propertyService.getPropertyByTenantId(tenantId);
+    public List<EarningsByPropertyDto> getEarningsByProperty() {
+        Users user = getCurrentUser();
+        List<PropertyResponseDto> properties = propertyService.getPropertyByTenantId(user.getId());
         return properties.stream()
                 .map(property -> {
                     BigDecimal earnings = bookingService.calculateTotalEarningsForProperty(property.getId());
@@ -111,8 +117,9 @@ public class AnalyticsServiceImpl implements AnalyticsService {
     }
 
     @Override
-    public List<PropertyAvailabilityDto> getPropertyAvailability(Long tenantId, LocalDate startDate, LocalDate endDate) {
-        List<PropertyResponseDto> properties = propertyService.getPropertyByTenantId(tenantId);
+    public List<PropertyAvailabilityDto> getPropertyAvailability(LocalDate startDate, LocalDate endDate) {
+        Users user = getCurrentUser();
+        List<PropertyResponseDto> properties = propertyService.getPropertyByTenantId(user.getId());
 
         return properties.stream().map(property -> {
             PropertyAvailabilityDto availabilityDto = new PropertyAvailabilityDto();
@@ -141,5 +148,11 @@ public class AnalyticsServiceImpl implements AnalyticsService {
             availabilityDto.setRooms(roomAvailabilities);
             return availabilityDto;
         }).collect(Collectors.toList());
+    }
+
+    private Users getCurrentUser() {
+        var claims = Claims.getClaimsFromJwt();
+        var email = (String) claims.get("sub");
+        return usersService.getDetailUserByEmail(email);
     }
 }

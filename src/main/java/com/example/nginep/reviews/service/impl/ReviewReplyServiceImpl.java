@@ -1,5 +1,6 @@
 package com.example.nginep.reviews.service.impl;
 
+import com.example.nginep.auth.helpers.Claims;
 import com.example.nginep.reviews.dto.CreateReviewReplyDto;
 import com.example.nginep.reviews.dto.ReviewReplyDto;
 import com.example.nginep.reviews.entity.Review;
@@ -22,19 +23,21 @@ public class ReviewReplyServiceImpl implements ReviewReplyService {
     private final ReviewService reviewService;
     private final UsersService userService;
     private final ReviewMapper reviewMapper;
+    private final UsersService usersService;
 
-    public ReviewReplyServiceImpl(ReviewReplyRepository reviewReplyRepository, ReviewService reviewService, UsersService userService, ReviewMapper reviewMapper) {
+    public ReviewReplyServiceImpl(ReviewReplyRepository reviewReplyRepository, ReviewService reviewService, UsersService userService, ReviewMapper reviewMapper, UsersService usersService) {
         this.reviewReplyRepository = reviewReplyRepository;
         this.reviewService = reviewService;
         this.userService = userService;
         this.reviewMapper = reviewMapper;
+        this.usersService = usersService;
     }
 
     @Override
     @Transactional
     public ReviewReplyDto createReviewReply(CreateReviewReplyDto createReviewReplyDto) {
+        Users tenant = getCurrentUser();
         Review review = reviewService.findReviewById(createReviewReplyDto.getReviewId());
-        Users tenant = userService.getDetailUserId(createReviewReplyDto.getTenantId());
 
         ReviewReply reviewReply = new ReviewReply();
         reviewReply.setReview(review);
@@ -59,6 +62,12 @@ public class ReviewReplyServiceImpl implements ReviewReplyService {
             throw new NotFoundException("Review reply not found");
         }
         reviewReplyRepository.deleteById(replyId);
+    }
+
+    private Users getCurrentUser() {
+        var claims = Claims.getClaimsFromJwt();
+        var email = (String) claims.get("sub");
+        return usersService.getDetailUserByEmail(email);
     }
 
 }

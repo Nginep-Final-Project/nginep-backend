@@ -1,5 +1,6 @@
 package com.example.nginep.bookings.service.impl;
 
+import com.example.nginep.auth.helpers.Claims;
 import com.example.nginep.bookings.dto.*;
 import com.example.nginep.bookings.entity.Booking;
 import com.example.nginep.bookings.enums.BookingStatus;
@@ -35,6 +36,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -44,18 +46,18 @@ public class BookingServiceImpl implements BookingService {
     private final BookingRepository bookingRepository;
     private final RoomService roomService;
     private final PaymentService paymentService;
-    private final UsersService userService;
+    private final UsersService usersService;
     private final TaskScheduler taskScheduler;
     private final PropertyImageService propertyImageService;
     private final PeakSeasonRatesService peakSeasonRatesService;
     private final CancelUnpaidBookingTask cancelUnpaidBookingTask;
     private final CancelUnconfirmedBookingTask cancelUnconfirmedBookingTask;
 
-    public BookingServiceImpl(@Lazy BookingRepository bookingRepository, @Lazy RoomService roomService, @Lazy PaymentService paymentService, UsersService userService, TaskScheduler taskScheduler, @Lazy PropertyImageService propertyImageService, @Lazy PeakSeasonRatesService peakSeasonRatesService, @Lazy CancelUnpaidBookingTask cancelUnpaidBookingTask, @Lazy CancelUnconfirmedBookingTask cancelUnconfirmedBookingTask) {
+    public BookingServiceImpl(@Lazy BookingRepository bookingRepository, @Lazy RoomService roomService, @Lazy PaymentService paymentService, UsersService usersService, TaskScheduler taskScheduler, @Lazy PropertyImageService propertyImageService, @Lazy PeakSeasonRatesService peakSeasonRatesService, @Lazy CancelUnpaidBookingTask cancelUnpaidBookingTask, @Lazy CancelUnconfirmedBookingTask cancelUnconfirmedBookingTask) {
         this.bookingRepository = bookingRepository;
         this.roomService = roomService;
         this.paymentService = paymentService;
-        this.userService = userService;
+        this.usersService = usersService;
         this.taskScheduler = taskScheduler;
         this.propertyImageService = propertyImageService;
         this.peakSeasonRatesService = peakSeasonRatesService;
@@ -69,8 +71,8 @@ public class BookingServiceImpl implements BookingService {
         validateBookingDates(bookingDTO);
         validateRoomAvailability(bookingDTO);
 
+        Users user = getCurrentUser();
         Room room = roomService.getRoomById(bookingDTO.getRoomId());
-        Users user = userService.getDetailUserId(bookingDTO.getUserId());
 
         Booking booking = new Booking();
         booking.setUser(user);
@@ -114,9 +116,31 @@ public class BookingServiceImpl implements BookingService {
     }
 
     private BigDecimal calculateFinalPrice(CreateBookingDto bookingDTO, Room room) {
-        BigDecimal basePrice = room.getBasePrice();
+        BigDecimal adjustedBasePrice = calculateAdjustedBasePrice(room, bookingDTO.getCheckInDate());
         long numberOfNights = ChronoUnit.DAYS.between(bookingDTO.getCheckInDate(), bookingDTO.getCheckOutDate());
-        return basePrice.multiply(BigDecimal.valueOf(numberOfNights));
+        return adjustedBasePrice.multiply(BigDecimal.valueOf(numberOfNights));
+    }
+
+    private BigDecimal calculateAdjustedBasePrice(Room room, LocalDate checkInDate) {
+        BigDecimal basePrice = room.getBasePrice();
+        Property property = room.getProperty();
+
+        Optional<PeakSeasonRates> applicableRate = property.getPeakSeasonRates().stream()
+                .filter(rate -> !checkInDate.isBefore(rate.getPeakSeasonDates().getFrom())
+                        && !checkInDate.isAfter(rate.getPeakSeasonDates().getTo()))
+                .findFirst();
+
+        if (applicableRate.isPresent()) {
+            PeakSeasonRates rate = applicableRate.get();
+            if (rate.getRateType() == PeakSeasonRates.RateType.PERCENTAGE) {
+                BigDecimal increase = basePrice.multiply(rate.getRateValue().divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_UP));
+                return basePrice.add(increase);
+            } else if (rate.getRateType() == PeakSeasonRates.RateType.FIXED_AMOUNT) {
+                return basePrice.add(rate.getRateValue());
+            }
+        }
+
+        return basePrice;
     }
 
     private void validateRoomAvailability(CreateBookingDto bookingDTO) {
@@ -239,8 +263,8 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<UserBookingsDto> getUserBookings(Long userId) {
-        Users user = userService.getDetailUserId(userId);
+    public List<UserBookingsDto> getUserBookings() {
+        Users user = getCurrentUser();
         List<Booking> bookings = bookingRepository.findByUser(user);
 
         return bookings.stream()
@@ -267,9 +291,9 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<TenantBookingsDto> getTenantBookings(Long tenantId) {
-        Users user = userService.getDetailUserId(tenantId);
-        List<Booking> bookings = bookingRepository.findByTenant(tenantId);
+    public List<TenantBookingsDto> getTenantBookings() {
+        Users user = getCurrentUser();
+        List<Booking> bookings = bookingRepository.findByTenant(user.getId());
 
         return bookings.stream()
                 .map(this::mapToTenantBookingResponseDto)
@@ -319,6 +343,12 @@ public class BookingServiceImpl implements BookingService {
         dto.setCoverImage(getCoverImage(booking.getRoom().getProperty().getId()));
         dto.setPaymentType(payment.getPaymentType());
 
+
+        dto.setCheckInDate(booking.getCheckInDate());
+        dto.setCheckOutDate(booking.getCheckOutDate());
+        dto.setNumGuests(booking.getNumGuests());
+        dto.setBasePrice(calculateAdjustedBasePrice(room, booking.getCheckInDate()));
+
         if (payment.getPaymentType() == PaymentType.MANUAL_PAYMENT) {
             dto.setBankName(tenant.getBankName());
             dto.setBankAccountNumber(tenant.getBankAccountNumber());
@@ -335,8 +365,8 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public Long checkExistingPendingBooking(Long userId, Long roomId) {
-        Users user = userService.getDetailUserId(userId);
+    public Long checkExistingPendingBooking(Long roomId) {
+        Users user = getCurrentUser();
         Room room = roomService.getRoomById(roomId);
 
         return bookingRepository.findByUserAndRoomAndStatus(user, room, BookingStatus.PENDING_PAYMENT)
@@ -364,8 +394,9 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<UnreviewedBookingDto> getUnreviewedBookingsForUser(Long userId) {
-        List<Booking> bookings = bookingRepository.findUnreviewedBookingsForUser(userId);
+    public List<UnreviewedBookingDto> getUnreviewedBookingsForUser() {
+        Users user = getCurrentUser();
+        List<Booking> bookings = bookingRepository.findUnreviewedBookingsForUser(user.getId());
         return bookings.stream().map(this::mapToUnreviewedBookingDto).collect(Collectors.toList());
     }
 
@@ -390,18 +421,21 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public BigDecimal calculateTotalEarnings(Long tenantId) {
-        return bookingRepository.calculateTotalEarningsByTenantId(tenantId);
+    public BigDecimal calculateTotalEarnings() {
+        Users user = getCurrentUser();
+        return bookingRepository.calculateTotalEarningsByTenantId(user.getId());
     }
 
     @Override
-    public Long countTotalBookings(Long tenantId) {
-        return bookingRepository.countBookingsByTenantId(tenantId);
+    public Long countTotalBookings() {
+        Users user = getCurrentUser();
+        return bookingRepository.countBookingsByTenantId(user.getId());
     }
 
     @Override
-    public BigDecimal calculatePeakSeasonRevenueDifference(Long tenantId) {
-        List<Booking> bookings = bookingRepository.findConfirmedBookingsByTenant(tenantId);
+    public BigDecimal calculatePeakSeasonRevenueDifference() {
+        Users user = getCurrentUser();
+        List<Booking> bookings = bookingRepository.findConfirmedBookingsByTenant(user.getId());
         BigDecimal revenueDifference = BigDecimal.ZERO;
 
         for (Booking booking : bookings) {
@@ -438,8 +472,9 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<Booking> getConfirmedBookingsBetweenDatesForTenant(Long tenantId, LocalDate startDate, LocalDate endDate) {
-        return bookingRepository.findConfirmedBookingsBetweenDatesForTenant(tenantId, BookingStatus.CONFIRMED, startDate, endDate);
+    public List<Booking> getConfirmedBookingsBetweenDatesForTenant(LocalDate startDate, LocalDate endDate) {
+        Users user = getCurrentUser();
+        return bookingRepository.findConfirmedBookingsBetweenDatesForTenant(user.getId(), BookingStatus.CONFIRMED, startDate, endDate);
     }
 
     @Override
@@ -473,4 +508,11 @@ public class BookingServiceImpl implements BookingService {
             //How do we refund the paid booking? dang
         }
     }
+
+    private Users getCurrentUser() {
+        var claims = Claims.getClaimsFromJwt();
+        var email = (String) claims.get("sub");
+        return usersService.getDetailUserByEmail(email);
+    }
+
 }

@@ -47,7 +47,6 @@ public class ReviewMapper {
         ReviewReplyDto dto = new ReviewReplyDto();
         dto.setId(reviewReply.getId());
         dto.setReviewId(reviewReply.getReview().getId());
-        dto.setTenantId(reviewReply.getTenant().getId());
         dto.setTenantName(reviewReply.getTenant().getFullName());
         dto.setReply(reviewReply.getReply());
         dto.setCreatedAt(reviewReply.getCreatedAt());
