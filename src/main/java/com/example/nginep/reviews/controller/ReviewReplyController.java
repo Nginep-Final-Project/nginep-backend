@@ -16,7 +16,7 @@ public class ReviewReplyController {
 
     private final ReviewReplyService reviewReplyService;
 
-    @PostMapping
+    @PostMapping("/create")
     public ResponseEntity<Response<ReviewReplyDto>> createReviewReply(@RequestBody CreateReviewReplyDto createReviewReplyDto) {
         ReviewReplyDto createdReply = reviewReplyService.createReviewReply(createReviewReplyDto);
         return Response.successResponse("Review reply created successfully", createdReply);

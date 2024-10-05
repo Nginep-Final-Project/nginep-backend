@@ -89,6 +89,10 @@ public class SecurityConfig {
                     auth.requestMatchers(HttpMethod.POST, "/api/v1/review/**").hasAuthority("SCOPE_guest");
                     auth.requestMatchers("/api/v1/languages").hasAuthority("SCOPE_tenant");
                     auth.requestMatchers("/api/v1/facility").hasAuthority("SCOPE_tenant");
+                    auth.requestMatchers("/api/v1/bookings/user/**").hasAuthority("SCOPE_guest");
+                    auth.requestMatchers("/api/v1/bookings/tenant/**").hasAuthority("SCOPE_tenant");
+                    auth.requestMatchers("/api/v1/bookings/create/**").hasAuthority("SCOPE_guest");
+                    auth.requestMatchers("/api/v1/bookings/check-existing-pending-booking/**").hasAuthority("SCOPE_guest");
                     auth.requestMatchers("/api/v1/bookings/**").permitAll();
                     auth.requestMatchers("/api/v1/payments/**").permitAll();
                     auth.requestMatchers("/api/v1/midtrans/**").permitAll();
@@ -98,7 +102,9 @@ public class SecurityConfig {
                     auth.requestMatchers("/api/v1/property-image").hasAuthority("SCOPE_tenant");
                     auth.requestMatchers("/api/v1/rooms").hasAuthority("SCOPE_tenant");
                     auth.requestMatchers(HttpMethod.GET,"/api/v1/property/**").permitAll();
+                    auth.requestMatchers("/api/v1/review/user/**").hasAuthority("SCOPE_guest");
                     auth.requestMatchers("/api/v1/reviews/**").permitAll();
+                    auth.requestMatchers("/api/v1/review-replies/create/**").hasAuthority("SCOPE_tenant");
                     auth.requestMatchers("/api/v1/review-replies/**").permitAll();
                     auth.requestMatchers(HttpMethod.POST,"/api/v1/rooms/availability").permitAll();
                     auth.requestMatchers("/api/v1/analytics/**").permitAll();

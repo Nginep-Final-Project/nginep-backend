@@ -21,16 +21,15 @@ public class BookingController {
     private final BookingService bookingService;
     private final BookingPaymentOrchestrator bookingPaymentOrchestrator;
 
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<Response<List<UserBookingsDto>>> getUserBookings(@PathVariable Long userId) {
-        List<UserBookingsDto> bookings = bookingService.getUserBookings(userId);
+    @GetMapping("/user")
+    public ResponseEntity<Response<List<UserBookingsDto>>> getUserBookings() {
+        List<UserBookingsDto> bookings = bookingService.getUserBookings();
         return Response.successResponse("User bookings retrieved successfully", bookings);
     }
 
-    @GetMapping("/tenant/{tenantId}")
-    public ResponseEntity<Response<List<TenantBookingsDto>>> getTenantBookings(
-            @PathVariable Long tenantId) {
-        List<TenantBookingsDto> bookings = bookingService.getTenantBookings(tenantId);
+    @GetMapping("/tenant")
+    public ResponseEntity<Response<List<TenantBookingsDto>>> getTenantBookings() {
+        List<TenantBookingsDto> bookings = bookingService.getTenantBookings();
         return Response.successResponse("Tenant bookings retrieved successfully", bookings);
     }
 
@@ -67,9 +66,8 @@ public class BookingController {
 
     @GetMapping("/check-existing-pending-booking")
     public ResponseEntity<Response<Long>> checkExistingPendingBooking(
-            @RequestParam Long userId,
             @RequestParam Long roomId) {
-        Long existingBookingId = bookingService.checkExistingPendingBooking(userId, roomId);
+        Long existingBookingId = bookingService.checkExistingPendingBooking(roomId);
         if (existingBookingId != null) {
             return Response.successResponse("Existing pending booking found", existingBookingId);
         } else {
@@ -83,7 +81,7 @@ public class BookingController {
     }
 
     @GetMapping("/room/{roomId}")
-    public ResponseEntity<Response<List<Booking>>> getBookingByRoomId(@PathVariable Long roomId){
+    public ResponseEntity<Response<List<Booking>>> getBookingByRoomId(@PathVariable Long roomId) {
         return Response.successResponse("Get list booking by room id success", bookingService.getBookingByRoomId(roomId));
     }
 
@@ -97,10 +95,10 @@ public class BookingController {
         return Response.successResponse("Delete not available booking success", bookingService.deleteNotAvailableBooking(bookingId));
     }
 
-    @GetMapping("/user/{userId}/unreviewed")
-    public ResponseEntity<Response<List<UnreviewedBookingDto>>> getUnreviewedBookings(@PathVariable Long userId) {
-        List<UnreviewedBookingDto> unreviewedBookings = bookingService.getUnreviewedBookingsForUser(userId);
+    @GetMapping("/user/unreviewed")
+    public ResponseEntity<Response<List<UnreviewedBookingDto>>> getUnreviewedBookings() {
+        List<UnreviewedBookingDto> unreviewedBookings = bookingService.getUnreviewedBookingsForUser();
         return Response.successResponse("Unreviewed bookings retrieved successfully", unreviewedBookings);
     }
-  
+
 }

@@ -10,19 +10,19 @@ import java.time.LocalDate;
 import java.util.List;
 
 public interface AnalyticsService {
-    BigDecimal calculateTotalEarnings(Long tenantId);
+    BigDecimal calculateTotalEarnings();
 
-    Long calculateTotalBookings(Long tenantId);
+    Long calculateTotalBookings();
 
-    Long calculateTotalProperties(Long tenantId);
+    Long calculateTotalProperties();
 
-    OverviewReportDto getOverviewReport(Long tenantId);
+    OverviewReportDto getOverviewReport();
 
-    BigDecimal calculatePeakSeasonRevenueDifference(Long tenantId);
+    BigDecimal calculatePeakSeasonRevenueDifference();
 
-    EarningsByTransactionDto getEarningsByTransaction(Long tenantId, String interval, LocalDate startDate, LocalDate endDate);
+    EarningsByTransactionDto getEarningsByTransaction(String interval, LocalDate startDate, LocalDate endDate);
 
-    List<EarningsByPropertyDto> getEarningsByProperty(Long tenantId);
+    List<EarningsByPropertyDto> getEarningsByProperty();
 
-    List<PropertyAvailabilityDto> getPropertyAvailability(Long tenantId, LocalDate startDate, LocalDate endDate);
+    List<PropertyAvailabilityDto> getPropertyAvailability(LocalDate startDate, LocalDate endDate);
 }

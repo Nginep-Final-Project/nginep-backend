@@ -6,6 +6,7 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
 
 @Data
 public class BookingPaymentDetailsDto {
@@ -22,6 +23,11 @@ public class BookingPaymentDetailsDto {
     private String propertyProvince;
     private String coverImage;
     private PaymentType paymentType;
+
+    private LocalDate checkInDate;
+    private LocalDate checkOutDate;
+    private Integer numGuests;
+    private BigDecimal basePrice;
 
     private String bankName;
     private String bankAccountNumber;

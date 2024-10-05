@@ -25,13 +25,13 @@ public interface BookingService {
 
     Booking updateBookingStatusMidtrans(String orderId, String transactionStatus, String fraudStatus);
 
-    List<UserBookingsDto> getUserBookings(Long userId);
+    List<UserBookingsDto> getUserBookings();
 
-    List<TenantBookingsDto> getTenantBookings(Long tenantId);
+    List<TenantBookingsDto> getTenantBookings();
 
     BookingPaymentDetailsDto getBookingPaymentDetails(Long bookingId);
 
-    Long checkExistingPendingBooking(Long userId, Long roomId);
+    Long checkExistingPendingBooking(Long roomId);
 
     void cancelBookingIfPending(Long bookingId);
 
@@ -41,15 +41,15 @@ public interface BookingService {
 
     String deleteNotAvailableBooking(Long bookingId);
 
-    List<UnreviewedBookingDto> getUnreviewedBookingsForUser(Long userId);
+    List<UnreviewedBookingDto> getUnreviewedBookingsForUser();
 
-    BigDecimal calculateTotalEarnings(Long tenantId);
+    BigDecimal calculateTotalEarnings();
 
-    Long countTotalBookings(Long tenantId);
+    Long countTotalBookings();
 
-    BigDecimal calculatePeakSeasonRevenueDifference(Long tenantId);
+    BigDecimal calculatePeakSeasonRevenueDifference();
 
-    List<Booking> getConfirmedBookingsBetweenDatesForTenant(Long tenantId, LocalDate startDate, LocalDate endDate);
+    List<Booking> getConfirmedBookingsBetweenDatesForTenant(LocalDate startDate, LocalDate endDate);
 
     BigDecimal calculateTotalEarningsForProperty(Long propertyId);
 
