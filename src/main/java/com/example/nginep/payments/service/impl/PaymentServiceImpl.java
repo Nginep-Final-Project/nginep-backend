@@ -2,6 +2,7 @@ package com.example.nginep.payments.service.impl;
 
 import com.example.nginep.bookings.entity.Booking;
 import com.example.nginep.bookings.enums.BookingStatus;
+import com.example.nginep.bookings.service.BookingService;
 import com.example.nginep.cloudinary.dto.CloudinaryUploadResponseDto;
 import com.example.nginep.cloudinary.service.CloudinaryService;
 import com.example.nginep.exceptions.applicationException.ApplicationException;
@@ -13,10 +14,13 @@ import com.example.nginep.payments.enums.PaymentStatus;
 import com.example.nginep.payments.enums.PaymentType;
 import com.example.nginep.payments.repository.PaymentRepository;
 import com.example.nginep.payments.service.PaymentService;
+import com.example.nginep.payments.tasks.CancelUnconfirmedManualPaymentTask;
 import lombok.RequiredArgsConstructor;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -30,17 +34,28 @@ import java.util.List;
 import java.util.Map;
 
 @Service
-@RequiredArgsConstructor
 public class PaymentServiceImpl implements PaymentService {
 
     private static final Logger log = LoggerFactory.getLogger(PaymentServiceImpl.class);
     private final PaymentRepository paymentRepository;
     private final CloudinaryService cloudinaryService;
     private final MidtransService midtransService;
+    private final CancelUnconfirmedManualPaymentTask cancelUnconfirmedManualPaymentTask;
+    private final TaskScheduler taskScheduler;
+    private final BookingService bookingService;
 
     private static final List<String> ALLOWED_FILE_EXTENSIONS = Arrays.asList("jpg", "png");
     private static final long MAX_FILE_SIZE = 1024 * 1024;
     private static final int MAX_PAYMENT_ATTEMPTS = 3;
+
+    public PaymentServiceImpl(PaymentRepository paymentRepository, CloudinaryService cloudinaryService, MidtransService midtransService, @Lazy CancelUnconfirmedManualPaymentTask cancelUnconfirmedManualPaymentTask, TaskScheduler taskScheduler, @Lazy BookingService bookingService) {
+        this.paymentRepository = paymentRepository;
+        this.cloudinaryService = cloudinaryService;
+        this.midtransService = midtransService;
+        this.taskScheduler = taskScheduler;
+        this.cancelUnconfirmedManualPaymentTask = cancelUnconfirmedManualPaymentTask;
+        this.bookingService = bookingService;
+    }
 
     @Override
     @Transactional
@@ -136,9 +151,10 @@ public class PaymentServiceImpl implements PaymentService {
         CloudinaryUploadResponseDto uploadResult = cloudinaryService.uploadImage(uploadProofOfPaymentDTO.getProofOfPayment());
         payment.setProofOfPayment(uploadResult.getUrl());
         payment.setStatus(PaymentStatus.AWAITING_CONFIRMATION);
-        payment.getBooking().setStatus(BookingStatus.AWAITING_CONFIRMATION);
         payment.setPaidAt(Instant.now());
         payment.setAttempts(payment.getAttempts() + 1);
+
+        scheduleUnconfirmedManualPaymentCancellation(payment.getId());
 
         return paymentRepository.save(payment);
     }
@@ -171,6 +187,26 @@ public class PaymentServiceImpl implements PaymentService {
         throw new ApplicationException("Unable to determine file extension");
     }
 
+    private void scheduleUnconfirmedManualPaymentCancellation(Long paymentId) {
+        cancelUnconfirmedManualPaymentTask.setPaymentId(paymentId);
+        taskScheduler.schedule(cancelUnconfirmedManualPaymentTask, Instant.now().plus(24, ChronoUnit.HOURS));
+    }
+
+    @Override
+    @Transactional
+    public void cancelUnconfirmedManualPayment(Long paymentId) {
+        Payment payment = findPaymentById(paymentId);
+        Booking booking = payment.getBooking();
+
+        if (payment.getStatus() == PaymentStatus.AWAITING_CONFIRMATION &&
+                (booking.getStatus() == BookingStatus.PENDING_PAYMENT || booking.getStatus() == BookingStatus.AWAITING_CONFIRMATION)) {
+            booking.setStatus(BookingStatus.CANCELLED);
+            // How to refund 101
+
+            paymentRepository.save(payment);
+        }
+    }
+
     @Override
     @Transactional
     public Payment confirmManualPayment(Long paymentId) {
@@ -182,7 +218,11 @@ public class PaymentServiceImpl implements PaymentService {
 
         payment.setStatus(PaymentStatus.CONFIRMED);
         payment.getBooking().setStatus(BookingStatus.AWAITING_CONFIRMATION);
-        return paymentRepository.save(payment);
+        Payment confirmedPayment = paymentRepository.save(payment);
+
+        bookingService.scheduleUnconfirmedBookingCancellation(confirmedPayment.getBooking().getId());
+
+        return confirmedPayment;
     }
 
     @Override
@@ -199,7 +239,6 @@ public class PaymentServiceImpl implements PaymentService {
         } else {
             payment.setPaidAt(null);
             payment.setStatus(PaymentStatus.REJECTED);
-            payment.getBooking().setStatus(BookingStatus.PENDING_PAYMENT);
             payment.setExpiryTime(Instant.now().plus(1, ChronoUnit.HOURS));
         }
 
