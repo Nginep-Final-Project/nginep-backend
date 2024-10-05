@@ -1,5 +1,6 @@
 package com.example.nginep.property.service.impl;
 
+import com.example.nginep.auth.helpers.Claims;
 import com.example.nginep.category.dto.CategoryResponseDto;
 import com.example.nginep.category.repository.CategoryRepository;
 import com.example.nginep.category.service.CategoryService;
@@ -62,7 +63,11 @@ public class PropertyServiceImpl implements PropertyService {
 
     @Override
     public PropertyResponseDto createProperty(PropertyRequestDto propertyRequestDto) {
-        Users user = usersService.getDetailUserId(propertyRequestDto.getTenantId());
+        var claims = Claims.getClaimsFromJwt();
+        var email = (String) claims.get("sub");
+        log.info("email Profile>>>>  " + email);
+        Users user = usersService.getDetailUserByEmail(email);
+
         Property newProperty = propertyRepository.save(propertyRequestDto.toEntity(user));
         for (String propertyFacility : propertyRequestDto.getPropertyFacilities()) {
             PropertyFacilityRequestDto newPropertyFacility = new PropertyFacilityRequestDto();
@@ -240,5 +245,14 @@ public class PropertyServiceImpl implements PropertyService {
     @Override
     public Long countPropertiesByTenant(Long tenantId) {
         return propertyRepository.countPropertiesByTenantId(tenantId);
+    }
+
+    @Override
+    public Page<PropertyResponseDto> getPropertyList(Pageable pageable) {
+        var claims = Claims.getClaimsFromJwt();
+        var email = (String) claims.get("sub");
+        log.info("email Profile>>>>  " + email);
+        Users user = usersService.getDetailUserByEmail(email);
+        return propertyRepository.findAllByUserId(user.getId(), pageable).map(this::mapToPropertyResponseDto);
     }
 }

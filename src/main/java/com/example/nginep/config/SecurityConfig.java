@@ -44,35 +44,34 @@ public class SecurityConfig {
     private final RsaKeyConfigProperties rsaKeyConfigProperties;
     private final UserDetailsServiceImpl userDetailsService;
 
-    public SecurityConfig(RsaKeyConfigProperties rsaKeyConfigProperties, UserDetailsServiceImpl userDetailsService) {
-        this.rsaKeyConfigProperties = rsaKeyConfigProperties;
-        this.userDetailsService = userDetailsService;
-    }
+   public SecurityConfig(RsaKeyConfigProperties rsaKeyConfigProperties, UserDetailsServiceImpl userDetailsService) {
+       this.rsaKeyConfigProperties = rsaKeyConfigProperties;
+       this.userDetailsService = userDetailsService;
+   }
 
-    @Bean
-    public AuthenticationManager authenticationManager() {
-        var authProvider = new DaoAuthenticationProvider();
-        authProvider.setUserDetailsService(userDetailsService);
-        authProvider.setPasswordEncoder(passwordEncoder());
-        return new ProviderManager(authProvider);
-    }
+   @Bean
+   public AuthenticationManager authenticationManager() {
+       var authProvider = new DaoAuthenticationProvider();
+       authProvider.setUserDetailsService(userDetailsService);
+       authProvider.setPasswordEncoder(passwordEncoder());
+       return new ProviderManager(authProvider);
+   }
 
-    @Bean
-    PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+   @Bean
+    PasswordEncoder passwordEncoder() {return new BCryptPasswordEncoder();
+   }
 
-    @Bean
+   @Bean
     public JwtDecoder jwtDecoder() {
-        return NimbusJwtDecoder.withPublicKey(rsaKeyConfigProperties.publicKey()).build();
-    }
+       return NimbusJwtDecoder.withPublicKey(rsaKeyConfigProperties.publicKey()).build();
+   }
 
-    @Bean
+   @Bean
     public JwtEncoder jwtEncoder() {
-        JWK jwk = new RSAKey.Builder(rsaKeyConfigProperties.publicKey()).privateKey(rsaKeyConfigProperties.privateKey()).build();
-        JWKSource<SecurityContext> jwks = new ImmutableJWKSet<>(new JWKSet(jwk));
-        return new NimbusJwtEncoder(jwks);
-    }
+       JWK jwk = new RSAKey.Builder(rsaKeyConfigProperties.publicKey()).privateKey(rsaKeyConfigProperties.privateKey()).build();
+       JWKSource<SecurityContext> jwks = new ImmutableJWKSet<>(new JWKSet(jwk));
+       return new NimbusJwtEncoder(jwks);
+   }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http, HandlerMappingIntrospector introspector) throws Exception {
@@ -85,7 +84,7 @@ public class SecurityConfig {
                     auth.requestMatchers("/api/v1/home/**").permitAll();
                     auth.requestMatchers("/api/v1/users/**").permitAll();
                     auth.requestMatchers("/api/v1/review/**").permitAll();
-                    auth.requestMatchers(HttpMethod.POST, "/api/v1/property/**").hasAuthority("SCOPE_tenant");
+                    auth.requestMatchers(HttpMethod.POST,"/api/v1/property/**").hasAuthority("SCOPE_tenant");
                     auth.requestMatchers("/api/v1/order/**").hasAuthority("SCOPE_guest");
                     auth.requestMatchers(HttpMethod.POST, "/api/v1/review/**").hasAuthority("SCOPE_guest");
                     auth.requestMatchers("/api/v1/languages").hasAuthority("SCOPE_tenant");
@@ -102,19 +101,21 @@ public class SecurityConfig {
                     auth.requestMatchers("/api/v1/property-facility").hasAuthority("SCOPE_tenant");
                     auth.requestMatchers("/api/v1/property-image").hasAuthority("SCOPE_tenant");
                     auth.requestMatchers("/api/v1/rooms").hasAuthority("SCOPE_tenant");
-                    auth.requestMatchers(HttpMethod.GET, "/api/v1/property/**").permitAll();
+                    auth.requestMatchers(HttpMethod.GET,"/api/v1/property/**").permitAll();
                     auth.requestMatchers("/api/v1/review/user/**").hasAuthority("SCOPE_guest");
                     auth.requestMatchers("/api/v1/reviews/**").permitAll();
                     auth.requestMatchers("/api/v1/review-replies/create/**").hasAuthority("SCOPE_tenant");
                     auth.requestMatchers("/api/v1/review-replies/**").permitAll();
-                    auth.requestMatchers(HttpMethod.POST, "/api/v1/rooms/availability").permitAll();
-                    auth.requestMatchers("/api/v1/analytics/**").hasAuthority("SCOPE_tenant");
+                    auth.requestMatchers(HttpMethod.POST,"/api/v1/rooms/availability").permitAll();
+                    auth.requestMatchers("/api/v1/analytics/**").permitAll();
+                    auth.requestMatchers(HttpMethod.PUT,"/api/v1/property/**").hasAuthority("SCOPE_tenant");
+                    auth.requestMatchers(HttpMethod.DELETE,"/api/v1/property/**").hasAuthority("SCOPE_tenant");
                     auth.anyRequest().authenticated();
                 })
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .oauth2ResourceServer((oauth2) -> {
                     oauth2.jwt((jwt) -> jwt
-                            .decoder(jwtDecoder()));
+                            .decoder(jwtDecoder() ));
                     oauth2.bearerTokenResolver(request -> {
                         Cookie[] cookies = request.getCookies();
                         if (cookies != null) {

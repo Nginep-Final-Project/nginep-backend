@@ -1,6 +1,8 @@
 package com.example.nginep.property.repository;
 
 import com.example.nginep.property.entity.Property;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -18,4 +20,6 @@ public interface PropertyRepository extends JpaRepository<Property, Long>, JpaSp
 
     @Query("SELECT COUNT(p) FROM Property p WHERE p.user.id = :tenantId")
     Long countPropertiesByTenantId(@Param("tenantId") Long tenantId);
+
+    Page<Property> findAllByUserId(Long tenantId, Pageable pageable);
 }
