@@ -24,7 +24,7 @@ public class RoomRequestDto {
     public Room toEntity(Property property) {
         Room newRoom = new Room();
         newRoom.setName(name);
-        newRoom.setRoomPicture("https://res.cloudinary.com/dhbg53ncx/image/upload/v1727193144/lvreblgeprumtmqkb27j.jpg");
+        newRoom.setRoomPicture(roomPicture);
         newRoom.setRoomPictureId(roomPictureId);
         newRoom.setDescription(description);
         newRoom.setMaxGuests(maxGuests);

@@ -85,6 +85,8 @@ public class PropertyServiceImpl implements PropertyService {
         }
         for (RoomRequestDto roomRequestDto : propertyRequestDto.getRooms()) {
             RoomRequestDto newPropertyRoom = new RoomRequestDto();
+            newPropertyRoom.setRoomPicture(roomRequestDto.getRoomPicture());
+            newPropertyRoom.setRoomPictureId(roomRequestDto.getRoomPictureId());
             newPropertyRoom.setName(roomRequestDto.getName());
             newPropertyRoom.setDescription(roomRequestDto.getDescription());
             newPropertyRoom.setBasePrice(roomRequestDto.getBasePrice());
