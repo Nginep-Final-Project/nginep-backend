@@ -18,5 +18,5 @@ public interface RoomService {
 
     String deleteRoom(Long roomId);
 
-    List<Room> searchRoomAvailable(SearchAvailableRoomRequestDto searchAvailableRoomRequestDto);
+    List<RoomResponseDto> searchRoomAvailable(SearchAvailableRoomRequestDto searchAvailableRoomRequestDto);
 }

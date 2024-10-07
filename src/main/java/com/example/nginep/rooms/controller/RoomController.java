@@ -40,7 +40,7 @@ public class RoomController {
     }
 
     @PostMapping("/availability")
-    public ResponseEntity<Response<List<Room>>> searchRoom(@RequestBody SearchAvailableRoomRequestDto searchAvailableRoomRequestDto) {
+    public ResponseEntity<Response<List<RoomResponseDto>>> searchRoom(@RequestBody SearchAvailableRoomRequestDto searchAvailableRoomRequestDto) {
         return Response.successResponse("Search room success", roomService.searchRoomAvailable(searchAvailableRoomRequestDto));
     }
 }

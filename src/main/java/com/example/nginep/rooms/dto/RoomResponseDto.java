@@ -16,5 +16,5 @@ public class RoomResponseDto {
     private Integer maxGuests;
     private BigDecimal basePrice;
     private Integer totalRoom;
-    private List<Booking> Booking;
+    private List<Booking> notAvailableDates;
 }
