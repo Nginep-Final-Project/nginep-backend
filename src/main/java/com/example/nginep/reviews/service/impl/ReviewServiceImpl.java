@@ -1,5 +1,6 @@
 package com.example.nginep.reviews.service.impl;
 
+import com.example.nginep.auth.helpers.Claims;
 import com.example.nginep.bookings.entity.Booking;
 import com.example.nginep.bookings.service.BookingService;
 import com.example.nginep.exceptions.notFoundException.NotFoundException;
@@ -11,6 +12,8 @@ import com.example.nginep.reviews.entity.ReviewReply;
 import com.example.nginep.reviews.mapper.ReviewMapper;
 import com.example.nginep.reviews.repository.ReviewRepository;
 import com.example.nginep.reviews.service.ReviewService;
+import com.example.nginep.users.entity.Users;
+import com.example.nginep.users.service.UsersService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -26,6 +29,7 @@ public class ReviewServiceImpl implements ReviewService {
     private final ReviewRepository reviewRepository;
     private final BookingService bookingService;
     private final ReviewMapper reviewMapper;
+    private final UsersService usersService;
 
     @Override
     public PropertyReviewSummaryDto getPropertyReviewSummary(Long propertyId) {
@@ -81,8 +85,9 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
-    public List<ReviewDto> getUserReviews(Long userId) {
-        List<Review> userReviews = reviewRepository.findByUserId(userId);
+    public List<ReviewDto> getUserReviews() {
+        Users user = getCurrentUser();
+        List<Review> userReviews = reviewRepository.findByUserId(user.getId());
         return userReviews.stream()
                 .map(reviewMapper::mapToReviewDto)
                 .toList();
@@ -99,6 +104,12 @@ public class ReviewServiceImpl implements ReviewService {
         return reviews.stream()
                 .map(reviewMapper::mapToReviewDto)
                 .collect(Collectors.toList());
+    }
+
+    private Users getCurrentUser() {
+        var claims = Claims.getClaimsFromJwt();
+        var email = (String) claims.get("sub");
+        return usersService.getDetailUserByEmail(email);
     }
 
 }

@@ -28,4 +28,6 @@ public interface PropertyService {
     String deleteProperty(Long propertyId);
 
     Long countPropertiesByTenant(Long tenantId);
+
+    Page<PropertyResponseDto> getPropertyList(Pageable pageable);
 }

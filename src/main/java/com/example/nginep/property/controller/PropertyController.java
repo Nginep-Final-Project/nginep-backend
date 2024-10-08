@@ -77,6 +77,15 @@ public class PropertyController {
         return Response.successResponse("Get home data success", propertyService.getHomeData());
     }
 
+    @GetMapping("/list")
+    public ResponseEntity<Response<Page
+            <PropertyResponseDto>>> getPropertyList( @RequestParam(defaultValue = "0") int page,
+                                                     @RequestParam(defaultValue = "12") int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Page<PropertyResponseDto> properties = propertyService.getPropertyList(pageable);
+        return Response.successResponse("Property with tenant id success", properties);
+    }
+
 
     private Pageable createPageAble(SortBy sortBy, SortDirection sortDirection, Integer page, Integer size) {
         if (sortBy != null && sortDirection != null) {

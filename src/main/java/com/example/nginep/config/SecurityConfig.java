@@ -77,7 +77,8 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http, HandlerMappingIntrospector introspector) throws Exception {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
-                .cors(Customizer.withDefaults())
+//                .cors(Customizer.withDefaults())
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> {
                     auth.requestMatchers("/error/**").permitAll();
                     auth.requestMatchers("/api/v1/auth/**").permitAll();
@@ -89,6 +90,10 @@ public class SecurityConfig {
                     auth.requestMatchers(HttpMethod.POST, "/api/v1/review/**").hasAuthority("SCOPE_guest");
                     auth.requestMatchers("/api/v1/languages").hasAuthority("SCOPE_tenant");
                     auth.requestMatchers("/api/v1/facility").hasAuthority("SCOPE_tenant");
+                    auth.requestMatchers("/api/v1/bookings/user/**").hasAuthority("SCOPE_guest");
+                    auth.requestMatchers("/api/v1/bookings/tenant/**").hasAuthority("SCOPE_tenant");
+                    auth.requestMatchers("/api/v1/bookings/create/**").hasAuthority("SCOPE_guest");
+                    auth.requestMatchers("/api/v1/bookings/check-existing-pending-booking/**").hasAuthority("SCOPE_guest");
                     auth.requestMatchers("/api/v1/bookings/**").permitAll();
                     auth.requestMatchers("/api/v1/payments/**").permitAll();
                     auth.requestMatchers("/api/v1/midtrans/**").permitAll();
@@ -98,10 +103,14 @@ public class SecurityConfig {
                     auth.requestMatchers("/api/v1/property-image").hasAuthority("SCOPE_tenant");
                     auth.requestMatchers("/api/v1/rooms").hasAuthority("SCOPE_tenant");
                     auth.requestMatchers(HttpMethod.GET,"/api/v1/property/**").permitAll();
+                    auth.requestMatchers("/api/v1/review/user/**").hasAuthority("SCOPE_guest");
                     auth.requestMatchers("/api/v1/reviews/**").permitAll();
+                    auth.requestMatchers("/api/v1/review-replies/create/**").hasAuthority("SCOPE_tenant");
                     auth.requestMatchers("/api/v1/review-replies/**").permitAll();
                     auth.requestMatchers(HttpMethod.POST,"/api/v1/rooms/availability").permitAll();
                     auth.requestMatchers("/api/v1/analytics/**").permitAll();
+                    auth.requestMatchers(HttpMethod.PUT,"/api/v1/property/**").hasAuthority("SCOPE_tenant");
+                    auth.requestMatchers(HttpMethod.DELETE,"/api/v1/property/**").hasAuthority("SCOPE_tenant");
                     auth.anyRequest().authenticated();
                 })
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -128,11 +137,17 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:3000"));
+        configuration.setAllowedOrigins(Arrays.asList(
+                "http://localhost:3000",
+                "https://nginep-frontend-dev.vercel.app",
+                "https://nginep-frontend.vercel.app",
+                "https://www.nginep-frontend-dev.vercel.app",
+                "https://www.nginep-frontend.vercel.app"
+        ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
-
+        configuration.setMaxAge(3600L);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
 

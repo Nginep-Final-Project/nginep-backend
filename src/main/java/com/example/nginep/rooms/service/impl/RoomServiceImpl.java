@@ -48,8 +48,8 @@ public class RoomServiceImpl implements RoomService {
             CreateNotAvailableBookingDTO newBooking = new CreateNotAvailableBookingDTO();
             newBooking.setUser(property.getUser());
             newBooking.setRoom(newRoom);
-            newBooking.setCheckInDate(notAvailableBookingDTO.getCheckInDate());
-            newBooking.setCheckOutDate(notAvailableBookingDTO.getCheckOutDate());
+            newBooking.setFrom(notAvailableBookingDTO.getFrom());
+            newBooking.setTo(notAvailableBookingDTO.getTo());
             newBooking.setFinalPrice(newRoom.getBasePrice());
             newBooking.setNumGuests(newRoom.getMaxGuests());
             bookingService.createNotAvailableBooking(newBooking);
@@ -66,6 +66,8 @@ public class RoomServiceImpl implements RoomService {
     public RoomResponseDto editRoom(RoomRequestDto roomRequestDto) {
         Room room = roomRepository.findById(roomRequestDto.getId()).orElseThrow(() -> new NotFoundException("Room with id: " + roomRequestDto.getId() + " not found"));
         room.setName(roomRequestDto.getName());
+        room.setRoomPicture(roomRequestDto.getRoomPicture());
+        room.setRoomPictureId(roomRequestDto.getRoomPictureId());
         room.setDescription(roomRequestDto.getDescription());
         room.setBasePrice(roomRequestDto.getBasePrice());
         room.setMaxGuests(roomRequestDto.getMaxGuests());
@@ -83,11 +85,11 @@ public class RoomServiceImpl implements RoomService {
     }
 
     @Override
-    public List<Room> searchRoomAvailable(SearchAvailableRoomRequestDto searchAvailableRoomRequestDto) {
+    public List<RoomResponseDto> searchRoomAvailable(SearchAvailableRoomRequestDto searchAvailableRoomRequestDto) {
         return roomRepository.findAvailableRooms(searchAvailableRoomRequestDto.getStartDate(),
                 searchAvailableRoomRequestDto.getEndDate(),
                 searchAvailableRoomRequestDto.getTotalGuest(),
-                searchAvailableRoomRequestDto.getPropertyId());
+                searchAvailableRoomRequestDto.getPropertyId()).stream().map(this::mapToRoomResponseDto).toList();
     }
 
     public RoomResponseDto mapToRoomResponseDto(Room room) {
@@ -100,7 +102,7 @@ public class RoomServiceImpl implements RoomService {
         response.setBasePrice(room.getBasePrice());
         response.setMaxGuests(room.getMaxGuests());
         response.setTotalRoom(room.getTotalRoom());
-        response.setBooking(bookingService.getBookingByRoomId(room.getId()));
+        response.setNotAvailableDates(bookingService.getBookingByRoomId(room.getId()));
         return response;
     }
 }

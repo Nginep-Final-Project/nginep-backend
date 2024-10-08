@@ -8,7 +8,6 @@ import java.time.Instant;
 public class ReviewReplyDto {
     private Long id;
     private Long reviewId;
-    private Long tenantId;
     private String tenantName;
     private String reply;
     private Instant createdAt;
