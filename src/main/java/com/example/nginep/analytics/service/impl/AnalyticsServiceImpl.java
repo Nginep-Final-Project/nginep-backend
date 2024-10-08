@@ -105,8 +105,7 @@ public class AnalyticsServiceImpl implements AnalyticsService {
 
     @Override
     public List<EarningsByPropertyDto> getEarningsByProperty() {
-        Users user = getCurrentUser();
-        List<PropertyResponseDto> properties = propertyService.getPropertyByTenantId(user.getId());
+        List<PropertyResponseDto> properties = propertyService.getPropertyByTenantId();
         return properties.stream()
                 .map(property -> {
                     BigDecimal earnings = bookingService.calculateTotalEarningsForProperty(property.getId());
@@ -118,8 +117,7 @@ public class AnalyticsServiceImpl implements AnalyticsService {
 
     @Override
     public List<PropertyAvailabilityDto> getPropertyAvailability(LocalDate startDate, LocalDate endDate) {
-        Users user = getCurrentUser();
-        List<PropertyResponseDto> properties = propertyService.getPropertyByTenantId(user.getId());
+        List<PropertyResponseDto> properties = propertyService.getPropertyByTenantId();
 
         return properties.stream().map(property -> {
             PropertyAvailabilityDto availabilityDto = new PropertyAvailabilityDto();

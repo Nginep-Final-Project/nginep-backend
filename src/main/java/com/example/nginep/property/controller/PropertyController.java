@@ -46,10 +46,10 @@ public class PropertyController {
         return Response.successResponse("Delete property success", propertyService.deleteProperty(propertyId));
     }
 
-    @GetMapping("/tenant/{tenantId}")
+    @GetMapping("/tenant")
     public ResponseEntity<Response<List
-            <PropertyResponseDto>>> getPropertiesByTenantId(@PathVariable Long tenantId) {
-        List<PropertyResponseDto> properties = propertyService.getPropertyByTenantId(tenantId);
+            <PropertyResponseDto>>> getPropertiesByTenantId() {
+        List<PropertyResponseDto> properties = propertyService.getPropertyByTenantId();
         return Response.successResponse("Properties retrieved successfully", properties);
     }
 
