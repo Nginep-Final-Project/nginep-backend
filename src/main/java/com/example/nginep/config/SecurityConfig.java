@@ -125,6 +125,11 @@ public class SecurityConfig {
                                     return cookie.getValue();
                                 }
                             }
+                        } else {
+                          var header = request.getHeader("Authorization");
+                          if (header != null) {
+                            return header.replace("Bearer ", "");
+                          }
                         }
                         return null;
                     });
