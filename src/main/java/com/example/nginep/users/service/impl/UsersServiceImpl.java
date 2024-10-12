@@ -248,7 +248,7 @@ public class UsersServiceImpl implements UsersService {
             String subject = "Reset password through this link";
 
             // Create reset password URL with email parameter
-            String resetPasswordUrl = "http://localhost:3000/reset-password?email=" + URLEncoder.encode(email, StandardCharsets.UTF_8.toString());
+            String resetPasswordUrl = "https://nginep-frontend-dev.vercel.app/reset-password?email=" + URLEncoder.encode(email, StandardCharsets.UTF_8.toString());
 
             String content = "Dear [[email]],<br><br>" + "Please click button below to re-direct to reset password page and reset your password:<br><br>" + "<a href=\"[[resetPasswordUrl]]\" style=\"background-color: #FF385C; border: none; color: white; padding: 15px 32px; text-align: center; text-decoration: none; display: inline-block; font-size: 16px; margin: 4px 2px; cursor: pointer;\">Reset Password</a><br><br>" + "Thank you,<br>" + "Nginep Team";
 
