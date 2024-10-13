@@ -123,31 +123,33 @@ public class BookingServiceImpl implements BookingService {
     }
 
     private BigDecimal calculateFinalPrice(CreateBookingDto bookingDTO, Room room) {
-        BigDecimal adjustedBasePrice = calculateAdjustedBasePrice(room, bookingDTO.getCheckInDate());
+        BigDecimal adjustedBasePrice = calculateHighestAdjustedBasePrice(room, bookingDTO.getCheckInDate(), bookingDTO.getCheckOutDate());
         long numberOfNights = ChronoUnit.DAYS.between(bookingDTO.getCheckInDate(), bookingDTO.getCheckOutDate());
         return adjustedBasePrice.multiply(BigDecimal.valueOf(numberOfNights));
     }
 
-    private BigDecimal calculateAdjustedBasePrice(Room room, LocalDate checkInDate) {
+    private BigDecimal calculateHighestAdjustedBasePrice(Room room, LocalDate checkInDate, LocalDate checkOutDate) {
         BigDecimal basePrice = room.getBasePrice();
         Property property = room.getProperty();
 
-        Optional<PeakSeasonRates> applicableRate = property.getPeakSeasonRates().stream()
-                .filter(rate -> !checkInDate.isBefore(rate.getPeakSeasonDates().getFrom())
-                        && !checkInDate.isAfter(rate.getPeakSeasonDates().getTo()))
-                .findFirst();
+        Optional<BigDecimal> highestAdjustedPrice = property.getPeakSeasonRates().stream()
+                .filter(rate ->
+                        (rate.getPeakSeasonDates().getFrom().isBefore(checkOutDate) || rate.getPeakSeasonDates().getFrom().isEqual(checkOutDate)) &&
+                                (rate.getPeakSeasonDates().getTo().isAfter(checkInDate) || rate.getPeakSeasonDates().getTo().isEqual(checkInDate))
+                )
+                .map(rate -> {
+                    if (rate.getRateType() == PeakSeasonRates.RateType.PERCENTAGE) {
+                        BigDecimal increase = basePrice.multiply(rate.getRateValue()
+                                .divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_UP));
+                        return basePrice.add(increase);
+                    } else if (rate.getRateType() == PeakSeasonRates.RateType.FIXED_AMOUNT) {
+                        return basePrice.add(rate.getRateValue());
+                    }
+                    return basePrice;
+                })
+                .max(BigDecimal::compareTo);
 
-        if (applicableRate.isPresent()) {
-            PeakSeasonRates rate = applicableRate.get();
-            if (rate.getRateType() == PeakSeasonRates.RateType.PERCENTAGE) {
-                BigDecimal increase = basePrice.multiply(rate.getRateValue().divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_UP));
-                return basePrice.add(increase);
-            } else if (rate.getRateType() == PeakSeasonRates.RateType.FIXED_AMOUNT) {
-                return basePrice.add(rate.getRateValue());
-            }
-        }
-
-        return basePrice;
+        return highestAdjustedPrice.orElse(basePrice);
     }
 
     private void validateRoomAvailability(CreateBookingDto bookingDTO) {
@@ -356,7 +358,7 @@ public class BookingServiceImpl implements BookingService {
         dto.setCheckInDate(booking.getCheckInDate());
         dto.setCheckOutDate(booking.getCheckOutDate());
         dto.setNumGuests(booking.getNumGuests());
-        dto.setBasePrice(calculateAdjustedBasePrice(room, booking.getCheckInDate()));
+        dto.setBasePrice(calculateHighestAdjustedBasePrice(room, booking.getCheckInDate(), booking.getCheckOutDate()));
 
         if (payment.getPaymentType() == PaymentType.MANUAL_PAYMENT) {
             dto.setBankName(tenant.getBankName());
