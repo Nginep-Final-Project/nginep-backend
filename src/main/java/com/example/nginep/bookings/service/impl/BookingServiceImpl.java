@@ -134,7 +134,7 @@ public class BookingServiceImpl implements BookingService {
 
         Optional<BigDecimal> highestAdjustedPrice = property.getPeakSeasonRates().stream()
                 .filter(rate ->
-                        (rate.getPeakSeasonDates().getFrom().isBefore(checkOutDate) || rate.getPeakSeasonDates().getFrom().isEqual(checkOutDate)) &&
+                        (rate.getPeakSeasonDates().getFrom().isBefore(checkOutDate)) &&
                                 (rate.getPeakSeasonDates().getTo().isAfter(checkInDate) || rate.getPeakSeasonDates().getTo().isEqual(checkInDate))
                 )
                 .map(rate -> {
