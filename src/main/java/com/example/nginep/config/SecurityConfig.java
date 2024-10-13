@@ -109,6 +109,9 @@ public class SecurityConfig {
                     auth.requestMatchers("/api/v1/review-replies/**").permitAll();
                     auth.requestMatchers(HttpMethod.POST,"/api/v1/rooms/availability").permitAll();
                     auth.requestMatchers("/api/v1/analytics/**").permitAll();
+                    auth.requestMatchers(HttpMethod.PUT,"/api/v1/property/**").hasAuthority("SCOPE_tenant");
+                    auth.requestMatchers(HttpMethod.DELETE,"/api/v1/property/**").hasAuthority("SCOPE_tenant");
+                    auth.requestMatchers(HttpMethod.GET,"/api/v1/property/home").permitAll();
                     auth.anyRequest().authenticated();
                 })
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
