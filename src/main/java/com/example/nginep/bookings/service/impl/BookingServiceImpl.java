@@ -101,7 +101,7 @@ public class BookingServiceImpl implements BookingService {
     private void validateBookingDates(CreateBookingDto bookingDTO) {
         LocalDate today = LocalDate.now();
 
-        if (bookingDTO.getCheckInDate().isBefore(today) || bookingDTO.getCheckInDate().isEqual(today)) {
+        if (bookingDTO.getCheckInDate().isBefore(today)) {
             throw new ApplicationException("Check-in date must be a future date");
         }
 
