@@ -3,6 +3,7 @@ package com.example.nginep.reviews.service.impl;
 import com.example.nginep.auth.helpers.Claims;
 import com.example.nginep.bookings.entity.Booking;
 import com.example.nginep.bookings.service.BookingService;
+import com.example.nginep.exceptions.applicationException.ApplicationException;
 import com.example.nginep.exceptions.notFoundException.NotFoundException;
 import com.example.nginep.reviews.dto.CreateReviewDto;
 import com.example.nginep.reviews.dto.PropertyReviewSummaryDto;
@@ -19,6 +20,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -67,6 +70,14 @@ public class ReviewServiceImpl implements ReviewService {
     @Transactional
     public ReviewDto createReview(CreateReviewDto createReviewDto) {
         Booking booking = bookingService.findBookingById(createReviewDto.getBookingId());
+
+        LocalDate checkoutDate = booking.getCheckOutDate();
+        LocalDate currentDate = LocalDate.now();
+        long daysSinceCheckout = ChronoUnit.DAYS.between(checkoutDate, currentDate);
+
+        if (daysSinceCheckout < 1) {
+            throw new ApplicationException("You can only create a review one day after the checkout date.");
+        }
 
         Review review = new Review();
         review.setBooking(booking);

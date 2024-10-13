@@ -109,8 +109,6 @@ public class SecurityConfig {
                     auth.requestMatchers("/api/v1/review-replies/**").permitAll();
                     auth.requestMatchers(HttpMethod.POST,"/api/v1/rooms/availability").permitAll();
                     auth.requestMatchers("/api/v1/analytics/**").permitAll();
-                    auth.requestMatchers(HttpMethod.PUT,"/api/v1/property/**").hasAuthority("SCOPE_tenant");
-                    auth.requestMatchers(HttpMethod.DELETE,"/api/v1/property/**").hasAuthority("SCOPE_tenant");
                     auth.anyRequest().authenticated();
                 })
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -147,7 +145,9 @@ public class SecurityConfig {
                 "https://nginep-frontend-dev.vercel.app",
                 "https://nginep-frontend.vercel.app",
                 "https://www.nginep-frontend-dev.vercel.app",
-                "https://www.nginep-frontend.vercel.app"
+                "https://www.nginep-frontend.vercel.app",
+                "https://api.midtrans.com",
+                "https://api.sandbox.midtrans.com"
         ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
