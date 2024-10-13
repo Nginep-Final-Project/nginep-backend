@@ -147,7 +147,9 @@ public class SecurityConfig {
                 "https://nginep-frontend-dev.vercel.app",
                 "https://nginep-frontend.vercel.app",
                 "https://www.nginep-frontend-dev.vercel.app",
-                "https://www.nginep-frontend.vercel.app"
+                "https://www.nginep-frontend.vercel.app",
+                "https://api.midtrans.com",
+                "https://api.sandbox.midtrans.com"
         ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
