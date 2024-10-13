@@ -81,4 +81,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate
     );
+
+    @Query("SELECT b FROM Booking b JOIN FETCH b.user JOIN FETCH b.room r JOIN FETCH r.property WHERE b.id = :id")
+    Optional<Booking> findByIdWithUserAndProperty(@Param("id") Long id);
 }

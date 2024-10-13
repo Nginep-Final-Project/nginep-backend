@@ -24,16 +24,21 @@ import com.example.nginep.rooms.service.RoomService;
 import com.example.nginep.users.service.UsersService;
 import com.example.nginep.property.entity.Property;
 import com.example.nginep.users.entity.Users;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.MimeMessage;
 import jakarta.transaction.Transactional;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.Instant;
-import java.time.LocalDate;
+import java.time.*;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
@@ -52,8 +57,9 @@ public class BookingServiceImpl implements BookingService {
     private final PeakSeasonRatesService peakSeasonRatesService;
     private final CancelUnpaidBookingTask cancelUnpaidBookingTask;
     private final CancelUnconfirmedBookingTask cancelUnconfirmedBookingTask;
+    private final JavaMailSender javaMailSender;
 
-    public BookingServiceImpl(@Lazy BookingRepository bookingRepository, @Lazy RoomService roomService, @Lazy PaymentService paymentService, UsersService usersService, TaskScheduler taskScheduler, @Lazy PropertyImageService propertyImageService, @Lazy PeakSeasonRatesService peakSeasonRatesService, @Lazy CancelUnpaidBookingTask cancelUnpaidBookingTask, @Lazy CancelUnconfirmedBookingTask cancelUnconfirmedBookingTask) {
+    public BookingServiceImpl(@Lazy BookingRepository bookingRepository, @Lazy RoomService roomService, @Lazy PaymentService paymentService, @Lazy UsersService usersService, @Lazy TaskScheduler taskScheduler, @Lazy PropertyImageService propertyImageService, @Lazy PeakSeasonRatesService peakSeasonRatesService, @Lazy CancelUnpaidBookingTask cancelUnpaidBookingTask, @Lazy CancelUnconfirmedBookingTask cancelUnconfirmedBookingTask, JavaMailSender javaMailSender) {
         this.bookingRepository = bookingRepository;
         this.roomService = roomService;
         this.paymentService = paymentService;
@@ -63,6 +69,7 @@ public class BookingServiceImpl implements BookingService {
         this.peakSeasonRatesService = peakSeasonRatesService;
         this.cancelUnpaidBookingTask = cancelUnpaidBookingTask;
         this.cancelUnconfirmedBookingTask = cancelUnconfirmedBookingTask;
+        this.javaMailSender = javaMailSender;
     }
 
     @Override
@@ -176,7 +183,9 @@ public class BookingServiceImpl implements BookingService {
 
         if (booking.getStatus() != BookingStatus.CONFIRMED) {
             booking.setStatus(BookingStatus.CONFIRMED);
-            return bookingRepository.save(booking);
+            Booking confirmedBooking = bookingRepository.save(booking);
+            scheduleCheckInReminder(confirmedBooking);
+            return confirmedBooking;
         } else {
             throw new ApplicationException("Booking is already confirmed");
         }
@@ -513,6 +522,69 @@ public class BookingServiceImpl implements BookingService {
         var claims = Claims.getClaimsFromJwt();
         var email = (String) claims.get("sub");
         return usersService.getDetailUserByEmail(email);
+    }
+
+    @Transactional
+    private void scheduleCheckInReminder(Booking booking) {
+        LocalDate reminderDate = booking.getCheckInDate().minusDays(1);
+        LocalTime reminderTime = LocalTime.of(6, 0);
+        LocalDateTime reminderDateTime = LocalDateTime.of(reminderDate, reminderTime);
+
+        ZoneId zoneId = ZoneId.systemDefault();
+        Instant scheduledTime = reminderDateTime.atZone(zoneId).toInstant();
+
+        taskScheduler.schedule(
+                () -> sendCheckInReminderEmail(booking.getId()),
+                scheduledTime
+        );
+    }
+
+    @Transactional
+    private void sendCheckInReminderEmail(Long bookingId) {
+        Booking booking = bookingRepository.findByIdWithUserAndProperty(bookingId)
+                .orElseThrow(() -> new NotFoundException("Booking not found with id: " + bookingId));
+
+        if (booking.getStatus() != BookingStatus.CONFIRMED) {
+            return;
+        }
+
+        try {
+            String toAddress = booking.getUser().getEmail();
+            String fromAddress = "projectnginep@gmail.com";
+            String senderName = "Nginep";
+            String subject = "Reminder: Your Stay at " + booking.getRoom().getProperty().getPropertyName();
+
+            MimeMessage message = javaMailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true);
+
+            helper.setFrom(new InternetAddress(fromAddress, senderName));
+            helper.setTo(toAddress);
+            helper.setSubject(subject);
+
+            String content = "Dear " + booking.getUser().getFullName() + ",<br>"
+                    + "This is a friendly reminder that your stay at " + booking.getRoom().getProperty().getPropertyName()
+                    + " is scheduled for tomorrow, " + booking.getCheckInDate() + ".<br><br>"
+                    + "Property: " + booking.getRoom().getProperty().getPropertyName() + "<br>"
+                    + "Room: " + booking.getRoom().getName() + "<br>"
+                    + "Address: " + booking.getRoom().getProperty().getPropertyAddress() + ", " + booking.getRoom().getProperty().getPropertyCity() + "<br>"
+                    + "Hosted by: " + booking.getRoom().getProperty().getUser().getFullName() + "<br>"
+                    + "Number of Guest: " + booking.getNumGuests() + "<br><br>"
+                    + "Check-in time: " + booking.getRoom().getProperty().getUser().getCheckinTime() + "<br>"
+                    + "Check-in date: " + booking.getCheckInDate() + "<br>"
+                    + "Check-out time: " + booking.getRoom().getProperty().getUser().getCheckoutTime() + "<br>"
+                    + "Check-out date: " + booking.getCheckOutDate() + "<br><br><br>"
+                    + "We hope you'd love and enjoy your stay!<br>"
+                    + "Best regards,<br>"
+                    + "Nginep";
+
+            helper.setText(content, true);
+
+            javaMailSender.send(message);
+            log.info("Successfully sent the reminder notification");
+        } catch (MessagingException | UnsupportedEncodingException e) {
+            log.info(e.toString());
+            throw new ApplicationException("Failed to send the check-in reminder notification");
+        }
     }
 
 }
