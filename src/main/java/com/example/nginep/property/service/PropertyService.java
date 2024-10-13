@@ -13,7 +13,7 @@ public interface PropertyService {
 
     PropertyResponseDto updateProperty(PropertyRequestDto propertyRequestDto);
 
-    List<PropertyResponseDto> getPropertyByTenantId(Long tenantId);
+    List<PropertyResponseDto> getPropertyByTenantId();
 
     Page<SearchResponseDto> getAllProperty(Pageable pageable, String propertyName, String propertyCategory, String propertyCity, LocalDate checkInDate, LocalDate checkOutDate, Integer totalGuests);
 
