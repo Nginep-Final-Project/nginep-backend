@@ -81,6 +81,10 @@ public class BookingServiceImpl implements BookingService {
         Users user = getCurrentUser();
         Room room = roomService.getRoomById(bookingDTO.getRoomId());
 
+        if (room.getMaxGuests() < bookingDTO.getNumGuests()) {
+            throw new ApplicationException("The number of guests exceeds the room's maximum capacity of " + room.getMaxGuests());
+        }
+
         Booking booking = new Booking();
         booking.setUser(user);
         booking.setRoom(room);
