@@ -309,7 +309,7 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public List<TenantBookingsDto> getTenantBookings() {
         Users user = getCurrentUser();
-        List<Booking> bookings = bookingRepository.findByTenantAndStatusNot(user.getId(), BookingStatus.NOT_AVAILABLE);
+        List<Booking> bookings = bookingRepository.findByTenantExcludingStatus(user.getId(), BookingStatus.NOT_AVAILABLE);
 
         return bookings.stream()
                 .map(this::mapToTenantBookingResponseDto)
@@ -320,7 +320,6 @@ public class BookingServiceImpl implements BookingService {
         TenantBookingsDto dto = new TenantBookingsDto();
         dto.setBookingId(booking.getId());
         dto.setRoomId(booking.getRoom().getId());
-        dto.setPaymentId(booking.getPayment().getId());
         dto.setPropertyName(booking.getRoom().getProperty().getPropertyName());
         dto.setCheckInDate(booking.getCheckInDate());
         dto.setCheckOutDate(booking.getCheckOutDate());
@@ -329,10 +328,15 @@ public class BookingServiceImpl implements BookingService {
         dto.setRoomName(booking.getRoom().getName());
         dto.setFinalPrice(booking.getFinalPrice());
         dto.setStatus(booking.getStatus());
-        dto.setPaymentType(booking.getPayment().getPaymentType());
-        dto.setPaymentStatus(booking.getPayment().getStatus());
-        dto.setProofOfPayment(booking.getPayment().getProofOfPayment());
         dto.setPropertyCoverImage(getCoverImage(booking.getRoom().getProperty().getId()));
+
+        if (booking.getPayment() != null) {
+            dto.setPaymentId(booking.getPayment().getId());
+            dto.setPaymentType(booking.getPayment().getPaymentType());
+            dto.setPaymentStatus(booking.getPayment().getStatus());
+            dto.setProofOfPayment(booking.getPayment().getProofOfPayment());
+        }
+
         return dto;
     }
 
