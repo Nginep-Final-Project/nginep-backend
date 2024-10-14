@@ -157,14 +157,16 @@ public class BookingServiceImpl implements BookingService {
     }
 
     private void validateRoomAvailability(CreateBookingDto bookingDTO) {
-        boolean isOverlapping = bookingRepository.existsOverlappingBooking(
+        boolean isAvailable = bookingRepository.isRoomAvailableForBooking(
                 bookingDTO.getRoomId(),
                 bookingDTO.getCheckInDate(),
-                bookingDTO.getCheckOutDate(),
-                BookingStatus.CANCELLED
+                bookingDTO.getCheckOutDate()
         );
 
-        if (isOverlapping) {
+        log.info("Room availability check for roomId {}: isAvailable = {}",
+                bookingDTO.getRoomId(), isAvailable);
+
+        if (!isAvailable) {
             throw new ApplicationException("The room is not available for the selected dates.");
         }
     }
@@ -289,6 +291,7 @@ public class BookingServiceImpl implements BookingService {
         UserBookingsDto dto = new UserBookingsDto();
         dto.setBookingId(booking.getId());
         dto.setRoomId(booking.getRoom().getId());
+        dto.setPropertyId(booking.getRoom().getProperty().getId());
         dto.setCheckInDate(booking.getCheckInDate());
         dto.setCheckOutDate(booking.getCheckOutDate());
         dto.setNumGuests(booking.getNumGuests());
@@ -306,7 +309,7 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public List<TenantBookingsDto> getTenantBookings() {
         Users user = getCurrentUser();
-        List<Booking> bookings = bookingRepository.findByTenant(user.getId());
+        List<Booking> bookings = bookingRepository.findByTenantExcludingStatus(user.getId(), BookingStatus.NOT_AVAILABLE);
 
         return bookings.stream()
                 .map(this::mapToTenantBookingResponseDto)
@@ -317,7 +320,6 @@ public class BookingServiceImpl implements BookingService {
         TenantBookingsDto dto = new TenantBookingsDto();
         dto.setBookingId(booking.getId());
         dto.setRoomId(booking.getRoom().getId());
-        dto.setPaymentId(booking.getPayment().getId());
         dto.setPropertyName(booking.getRoom().getProperty().getPropertyName());
         dto.setCheckInDate(booking.getCheckInDate());
         dto.setCheckOutDate(booking.getCheckOutDate());
@@ -326,10 +328,15 @@ public class BookingServiceImpl implements BookingService {
         dto.setRoomName(booking.getRoom().getName());
         dto.setFinalPrice(booking.getFinalPrice());
         dto.setStatus(booking.getStatus());
-        dto.setPaymentType(booking.getPayment().getPaymentType());
-        dto.setPaymentStatus(booking.getPayment().getStatus());
-        dto.setProofOfPayment(booking.getPayment().getProofOfPayment());
         dto.setPropertyCoverImage(getCoverImage(booking.getRoom().getProperty().getId()));
+
+        if (booking.getPayment() != null) {
+            dto.setPaymentId(booking.getPayment().getId());
+            dto.setPaymentType(booking.getPayment().getPaymentType());
+            dto.setPaymentStatus(booking.getPayment().getStatus());
+            dto.setProofOfPayment(booking.getPayment().getProofOfPayment());
+        }
+
         return dto;
     }
 
