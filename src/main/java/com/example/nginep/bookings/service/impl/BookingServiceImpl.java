@@ -249,9 +249,7 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     @Transactional
-    public Booking updateBookingStatusMidtrans(String orderId, String transactionStatus, String fraudStatus) {
-        Booking booking = findBookingById(Long.valueOf(orderId));
-
+    public Booking updateBookingStatusMidtrans(Booking booking, String transactionStatus, String fraudStatus) {
         switch (transactionStatus) {
             case "capture":
                 if ("challenge".equals(fraudStatus)) {
