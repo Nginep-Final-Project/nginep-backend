@@ -277,9 +277,7 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     @Transactional
-    public Payment updatePaymentStatusMidtrans(String orderId, String transactionStatus, String fraudStatus) {
-        Payment payment = findPaymentById(Long.valueOf(orderId));
-
+    public Payment updatePaymentStatusMidtrans(Payment payment, String transactionStatus, String fraudStatus) {
         switch (transactionStatus) {
             case "capture":
                 if ("challenge".equals(fraudStatus)) {
@@ -303,6 +301,12 @@ public class PaymentServiceImpl implements PaymentService {
                 throw new ApplicationException("Unhandled transaction status: " + transactionStatus);
         }
         return paymentRepository.save(payment);
+    }
+
+    @Override
+    public Payment findPaymentByOrderId(String orderId) {
+        return paymentRepository.findById(Long.valueOf(orderId))
+                .orElseThrow(() -> new NotFoundException("Payment not found for order ID: " + orderId));
     }
 
 }

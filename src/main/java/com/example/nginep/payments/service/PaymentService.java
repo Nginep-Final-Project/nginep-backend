@@ -23,7 +23,9 @@ public interface PaymentService {
 
     Map<String, Object> getMidtransDetails(String orderId);
 
-    Payment updatePaymentStatusMidtrans(String orderId, String transactionStatus, String fraudStatus);
+    Payment updatePaymentStatusMidtrans(Payment payment, String transactionStatus, String fraudStatus);
 
     void cancelUnconfirmedManualPayment(Long paymentId);
+
+    Payment findPaymentByOrderId(String orderId);
 }

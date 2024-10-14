@@ -23,7 +23,7 @@ public interface BookingService {
 
     void cancelBookingByUser(Long bookingId);
 
-    Booking updateBookingStatusMidtrans(String orderId, String transactionStatus, String fraudStatus);
+    Booking updateBookingStatusMidtrans(Booking booking, String transactionStatus, String fraudStatus);
 
     List<UserBookingsDto> getUserBookings();
 

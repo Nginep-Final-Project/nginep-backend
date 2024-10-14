@@ -38,35 +38,32 @@ public class MidtransNotificationHandler {
             String transactionStatus = notification.getString("transaction_status");
             String fraudStatus = notification.optString("fraud_status");
 
-            JSONObject transactionStatusValidate = midtransService.getTransactionStatus(orderId);
-            if (!transactionStatus.equals(transactionStatusValidate.getString("transaction_status"))) {
-                throw new ApplicationException("Transaction status mismatch");
-            }
+            validateTransactionStatus(orderId, transactionStatus);
 
-            Payment updatedPayment = null;
-            Booking updatedBooking = null;
+            Payment payment = paymentService.findPaymentByOrderId(orderId);
 
-            try {
-                updatedPayment = paymentService.updatePaymentStatusMidtrans(orderId, transactionStatus, fraudStatus);
-            } catch (Exception e) {
-                log.error("Error updating payment status: {}", e.getMessage());
-            }
+            Payment updatedPayment = paymentService.updatePaymentStatusMidtrans(payment, transactionStatus, fraudStatus);
+            Booking updatedBooking = bookingService.updateBookingStatusMidtrans(payment.getBooking(), transactionStatus, fraudStatus);
 
-            try {
-                updatedBooking = bookingService.updateBookingStatusMidtrans(orderId, transactionStatus, fraudStatus);
-            } catch (Exception e) {
-                log.error("Error updating booking status: {}", e.getMessage());
-            }
-
-            if (updatedPayment != null && updatedBooking != null &&
-                    updatedPayment.getStatus() == PaymentStatus.CONFIRMED &&
-                    updatedBooking.getStatus() == BookingStatus.AWAITING_CONFIRMATION) {
-                scheduleUnconfirmedBookingCancellation(updatedBooking.getId());
-            }
+            handlePostUpdateActions(updatedPayment, updatedBooking);
 
         } catch (Exception e) {
             log.error("Failed to process Midtrans notification: {}", e.getMessage());
             throw new ApplicationException("Failed to process Midtrans notification: " + e.getMessage());
+        }
+    }
+
+    private void validateTransactionStatus(String orderId, String transactionStatus) {
+        JSONObject transactionStatusValidate = midtransService.getTransactionStatus(orderId);
+        if (!transactionStatus.equals(transactionStatusValidate.getString("transaction_status"))) {
+            throw new ApplicationException("Transaction status mismatch");
+        }
+    }
+
+    private void handlePostUpdateActions(Payment payment, Booking booking) {
+        if (payment.getStatus() == PaymentStatus.CONFIRMED &&
+                booking.getStatus() == BookingStatus.AWAITING_CONFIRMATION) {
+            scheduleUnconfirmedBookingCancellation(booking.getId());
         }
     }
 
