@@ -459,24 +459,18 @@ public class BookingServiceImpl implements BookingService {
         BigDecimal revenueDifference = BigDecimal.ZERO;
 
         for (Booking booking : bookings) {
-            List<PeakSeasonRatesResponseDto> peakSeasonRates = peakSeasonRatesService.getPeakSeasonRatesByPropertyId(booking.getRoom().getProperty().getId());
+            Room room = booking.getRoom();
+            BigDecimal basePrice = room.getBasePrice();
+            LocalDate checkInDate = booking.getCheckInDate();
+            LocalDate checkOutDate = booking.getCheckOutDate();
 
-            LocalDate currentDate = booking.getCheckInDate();
-            while (!currentDate.isAfter(booking.getCheckOutDate())) {
-                for (PeakSeasonRatesResponseDto peakSeason : peakSeasonRates) {
-                    if (currentDate.isEqual(peakSeason.getPeakSeasonDates().getFrom()) ||
-                            (currentDate.isAfter(peakSeason.getPeakSeasonDates().getFrom()) &&
-                                    currentDate.isBefore(peakSeason.getPeakSeasonDates().getTo())) ||
-                            currentDate.isEqual(peakSeason.getPeakSeasonDates().getTo())) {
+            BigDecimal highestAdjustedBasePrice = calculateHighestAdjustedBasePrice(room, checkInDate, checkOutDate);
 
-                        BigDecimal basePrice = booking.getRoom().getBasePrice();
-                        BigDecimal peakSeasonPrice = calculatePeakSeasonPrice(basePrice, peakSeason);
-                        revenueDifference = revenueDifference.add(peakSeasonPrice.subtract(basePrice));
-                        break;
-                    }
-                }
-                currentDate = currentDate.plusDays(1);
-            }
+            long numberOfNights = ChronoUnit.DAYS.between(checkInDate, checkOutDate);
+            BigDecimal priceDifferencePerNight = highestAdjustedBasePrice.subtract(basePrice);
+            BigDecimal bookingRevenueDifference = priceDifferencePerNight.multiply(BigDecimal.valueOf(numberOfNights));
+
+            revenueDifference = revenueDifference.add(bookingRevenueDifference);
         }
 
         return revenueDifference;
