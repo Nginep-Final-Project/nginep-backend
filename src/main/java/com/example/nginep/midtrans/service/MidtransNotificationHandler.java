@@ -9,6 +9,7 @@ import com.example.nginep.payments.entity.Payment;
 import com.example.nginep.payments.enums.PaymentStatus;
 import com.example.nginep.payments.service.PaymentService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
@@ -19,6 +20,7 @@ import java.time.temporal.ChronoUnit;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class MidtransNotificationHandler {
 
     private final PaymentService paymentService;
@@ -41,16 +43,29 @@ public class MidtransNotificationHandler {
                 throw new ApplicationException("Transaction status mismatch");
             }
 
-            Payment updatedPayment = paymentService.updatePaymentStatusMidtrans(orderId, transactionStatus, fraudStatus);
+            Payment updatedPayment = null;
+            Booking updatedBooking = null;
 
-            Booking updatedBooking = bookingService.updateBookingStatusMidtrans(orderId, transactionStatus, fraudStatus);
+            try {
+                updatedPayment = paymentService.updatePaymentStatusMidtrans(orderId, transactionStatus, fraudStatus);
+            } catch (Exception e) {
+                log.error("Error updating payment status: {}", e.getMessage());
+            }
 
-            if (updatedPayment.getStatus() == PaymentStatus.CONFIRMED &&
+            try {
+                updatedBooking = bookingService.updateBookingStatusMidtrans(orderId, transactionStatus, fraudStatus);
+            } catch (Exception e) {
+                log.error("Error updating booking status: {}", e.getMessage());
+            }
+
+            if (updatedPayment != null && updatedBooking != null &&
+                    updatedPayment.getStatus() == PaymentStatus.CONFIRMED &&
                     updatedBooking.getStatus() == BookingStatus.AWAITING_CONFIRMATION) {
                 scheduleUnconfirmedBookingCancellation(updatedBooking.getId());
             }
 
         } catch (Exception e) {
+            log.error("Failed to process Midtrans notification: {}", e.getMessage());
             throw new ApplicationException("Failed to process Midtrans notification: " + e.getMessage());
         }
     }
