@@ -291,6 +291,7 @@ public class BookingServiceImpl implements BookingService {
         UserBookingsDto dto = new UserBookingsDto();
         dto.setBookingId(booking.getId());
         dto.setRoomId(booking.getRoom().getId());
+        dto.setPropertyId(booking.getRoom().getProperty().getId());
         dto.setCheckInDate(booking.getCheckInDate());
         dto.setCheckOutDate(booking.getCheckOutDate());
         dto.setNumGuests(booking.getNumGuests());
