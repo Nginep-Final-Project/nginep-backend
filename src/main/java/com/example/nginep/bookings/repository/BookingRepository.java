@@ -38,6 +38,16 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
                                      @Param("checkOutDate") LocalDate checkOutDate,
                                      @Param("cancelledStatus") BookingStatus cancelledStatus);
 
+    @Query("SELECT (r.totalRoom - COALESCE(COUNT(b), 0)) >= 1 FROM Room r " +
+            "LEFT JOIN r.bookings b " +
+            "ON b.checkInDate < :checkOutDate AND b.checkOutDate > :checkInDate " +
+            "AND b.status NOT IN ('CANCELLED') " +
+            "WHERE r.id = :roomId " +
+            "GROUP BY r.id, r.totalRoom")
+    boolean isRoomAvailableForBooking(@Param("roomId") Long roomId,
+                                      @Param("checkInDate") LocalDate checkInDate,
+                                      @Param("checkOutDate") LocalDate checkOutDate);
+
     @Query("SELECT b FROM Booking b WHERE b.user.id = :userId AND b.status = 'CONFIRMED' AND b.checkOutDate < CURRENT_DATE AND NOT EXISTS (SELECT r FROM Review r WHERE r.booking = b)")
     List<Booking> findUnreviewedBookingsForUser(@Param("userId") Long userId);
 
