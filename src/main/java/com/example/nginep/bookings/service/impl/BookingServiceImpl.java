@@ -309,7 +309,7 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public List<TenantBookingsDto> getTenantBookings() {
         Users user = getCurrentUser();
-        List<Booking> bookings = bookingRepository.findByTenant(user.getId());
+        List<Booking> bookings = bookingRepository.findByTenantAndStatusNot(user.getId(), BookingStatus.NOT_AVAILABLE);
 
         return bookings.stream()
                 .map(this::mapToTenantBookingResponseDto)

@@ -26,6 +26,8 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             "WHERE p.user.id = :tenantId")
     List<Booking> findByTenant(@Param("tenantId") Long tenantId);
 
+    List<Booking> findByTenantAndStatusNot(Long tenantId, BookingStatus status);
+
     Optional<Booking> findByUserAndRoomAndStatus(Users user, Room room, BookingStatus status);
 
     @Query("SELECT COUNT(b) > 0 FROM Booking b " +
