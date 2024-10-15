@@ -26,6 +26,15 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             "WHERE p.user.id = :tenantId")
     List<Booking> findByTenant(@Param("tenantId") Long tenantId);
 
+    @Query("SELECT b FROM Booking b " +
+            "JOIN b.room r " +
+            "JOIN r.property p " +
+            "WHERE p.user.id = :tenantId " +
+            "AND b.status != :excludeStatus")
+    List<Booking> findByTenantExcludingStatus(
+            @Param("tenantId") Long tenantId,
+            @Param("excludeStatus") BookingStatus excludeStatus
+    );
     Optional<Booking> findByUserAndRoomAndStatus(Users user, Room room, BookingStatus status);
 
     @Query("SELECT COUNT(b) > 0 FROM Booking b " +
@@ -37,6 +46,16 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
                                      @Param("checkInDate") LocalDate checkInDate,
                                      @Param("checkOutDate") LocalDate checkOutDate,
                                      @Param("cancelledStatus") BookingStatus cancelledStatus);
+
+    @Query("SELECT (r.totalRoom - COALESCE(COUNT(b), 0)) >= 1 FROM Room r " +
+            "LEFT JOIN r.bookings b " +
+            "ON b.checkInDate < :checkOutDate AND b.checkOutDate > :checkInDate " +
+            "AND b.status NOT IN ('CANCELLED') " +
+            "WHERE r.id = :roomId " +
+            "GROUP BY r.id, r.totalRoom")
+    boolean isRoomAvailableForBooking(@Param("roomId") Long roomId,
+                                      @Param("checkInDate") LocalDate checkInDate,
+                                      @Param("checkOutDate") LocalDate checkOutDate);
 
     @Query("SELECT b FROM Booking b WHERE b.user.id = :userId AND b.status = 'CONFIRMED' AND b.checkOutDate < CURRENT_DATE AND NOT EXISTS (SELECT r FROM Review r WHERE r.booking = b)")
     List<Booking> findUnreviewedBookingsForUser(@Param("userId") Long userId);

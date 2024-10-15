@@ -9,6 +9,7 @@ import java.time.LocalDate;
 public class UserBookingsDto {
     private Long bookingId;
     private Long roomId;
+    private Long propertyId;
     private LocalDate checkInDate;
     private LocalDate checkOutDate;
     private Integer numGuests;
