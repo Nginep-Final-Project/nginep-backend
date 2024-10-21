@@ -141,9 +141,9 @@ public class PaymentServiceImpl implements PaymentService {
             throw new ApplicationException("Payment has expired. Please create a new booking.");
         }
 
-        if (payment.getAttempts() >= MAX_PAYMENT_ATTEMPTS) {
-            throw new ApplicationException("Maximum payment attempts reached. Please create a new booking.");
-        }
+//        if (payment.getAttempts() >= MAX_PAYMENT_ATTEMPTS) {
+//            throw new ApplicationException("Maximum payment attempts reached. Please create a new booking.");
+//        }
 
         MultipartFile file = uploadProofOfPaymentDTO.getProofOfPayment();
         validateFile(file);
@@ -151,8 +151,9 @@ public class PaymentServiceImpl implements PaymentService {
         CloudinaryUploadResponseDto uploadResult = cloudinaryService.uploadImage(uploadProofOfPaymentDTO.getProofOfPayment());
         payment.setProofOfPayment(uploadResult.getUrl());
         payment.setStatus(PaymentStatus.AWAITING_CONFIRMATION);
+        payment.getBooking().setStatus(BookingStatus.AWAITING_CONFIRMATION);
         payment.setPaidAt(Instant.now());
-        payment.setAttempts(payment.getAttempts() + 1);
+//        payment.setAttempts(payment.getAttempts() + 1);
 
         scheduleUnconfirmedManualPaymentCancellation(payment.getId());
 
@@ -217,10 +218,10 @@ public class PaymentServiceImpl implements PaymentService {
         }
 
         payment.setStatus(PaymentStatus.CONFIRMED);
-        payment.getBooking().setStatus(BookingStatus.AWAITING_CONFIRMATION);
+//        payment.getBooking().setStatus(BookingStatus.CONFIRMED);
         Payment confirmedPayment = paymentRepository.save(payment);
 
-        bookingService.scheduleUnconfirmedBookingCancellation(confirmedPayment.getBooking().getId());
+//        bookingService.scheduleUnconfirmedBookingCancellation(confirmedPayment.getBooking().getId());
 
         return confirmedPayment;
     }
@@ -234,13 +235,16 @@ public class PaymentServiceImpl implements PaymentService {
             throw new ApplicationException("Only payments awaiting confirmation can be rejected");
         }
 
-        if (payment.getAttempts() >= MAX_PAYMENT_ATTEMPTS) {
-            payment.setStatus(PaymentStatus.CANCELLED);
-        } else {
-            payment.setPaidAt(null);
-            payment.setStatus(PaymentStatus.REJECTED);
-            payment.setExpiryTime(Instant.now().plus(1, ChronoUnit.HOURS));
-        }
+//        if (payment.getAttempts() >= MAX_PAYMENT_ATTEMPTS) {
+//            payment.setStatus(PaymentStatus.CANCELLED);
+//        } else {
+//            payment.setPaidAt(null);
+//            payment.setStatus(PaymentStatus.REJECTED);
+//            payment.setExpiryTime(Instant.now().plus(1, ChronoUnit.HOURS));
+//        }
+
+        payment.setStatus(PaymentStatus.REJECTED);
+        payment.getBooking().setStatus(BookingStatus.CANCELLED);
 
         return paymentRepository.save(payment);
     }
@@ -277,9 +281,7 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     @Transactional
-    public Payment updatePaymentStatusMidtrans(String orderId, String transactionStatus, String fraudStatus) {
-        Payment payment = findPaymentById(Long.valueOf(orderId));
-
+    public Payment updatePaymentStatusMidtrans(Payment payment, String transactionStatus, String fraudStatus) {
         switch (transactionStatus) {
             case "capture":
                 if ("challenge".equals(fraudStatus)) {
@@ -303,6 +305,12 @@ public class PaymentServiceImpl implements PaymentService {
                 throw new ApplicationException("Unhandled transaction status: " + transactionStatus);
         }
         return paymentRepository.save(payment);
+    }
+
+    @Override
+    public Payment findPaymentByOrderId(String orderId) {
+        return paymentRepository.findById(Long.valueOf(orderId))
+                .orElseThrow(() -> new NotFoundException("Payment not found for order ID: " + orderId));
     }
 
 }
