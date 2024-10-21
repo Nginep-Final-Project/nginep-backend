@@ -100,7 +100,7 @@ public class AuthController {
             }
 
             // Create authentication object
-            Authentication authentication =  new UsernamePasswordAuthenticationToken(user.getEmail(), googleLoginRequestDto.getIdToken());
+            Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(user.getEmail(), googleLoginRequestDto.getIdToken()));
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
             String token = authService.generateToken(authentication);
