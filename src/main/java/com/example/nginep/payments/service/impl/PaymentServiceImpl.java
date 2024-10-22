@@ -33,6 +33,10 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -295,30 +299,49 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     @Transactional
-    public Payment updatePaymentStatusMidtrans(Payment payment, String transactionStatus, String fraudStatus) {
-        switch (transactionStatus) {
-            case "capture":
-                if ("challenge".equals(fraudStatus)) {
-                    payment.setStatus(PaymentStatus.AWAITING_CONFIRMATION);
-                } else if ("accept".equals(fraudStatus)) {
+    public Payment updatePaymentStatusMidtrans(Payment payment, String transactionStatus, String fraudStatus, String settlementTime) {
+        try {
+            if ("settlement".equals(transactionStatus) && settlementTime != null) {
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                LocalDateTime localDateTime = LocalDateTime.parse(settlementTime, formatter);
+                Instant paidAt = localDateTime.atZone(ZoneId.systemDefault()).toInstant();
+                payment.setPaidAt(paidAt);
+            }
+
+            switch (transactionStatus.toLowerCase()) {
+                case "capture":
+                    if ("challenge".equals(fraudStatus)) {
+                        payment.setStatus(PaymentStatus.AWAITING_CONFIRMATION);
+                    } else if ("accept".equals(fraudStatus)) {
+                        payment.setStatus(PaymentStatus.CONFIRMED);
+                    }
+                    break;
+                case "settlement":
                     payment.setStatus(PaymentStatus.CONFIRMED);
-                }
-                break;
-            case "settlement":
-                payment.setStatus(PaymentStatus.CONFIRMED);
-                break;
-            case "deny":
-            case "cancel":
-            case "expire":
-                payment.setStatus(PaymentStatus.CANCELLED);
-                break;
-            case "pending":
-                payment.setStatus(PaymentStatus.PENDING_PAYMENT);
-                break;
-            default:
-                throw new ApplicationException("Unhandled transaction status: " + transactionStatus);
+                    break;
+                case "deny":
+                case "cancel":
+                case "expire":
+                    payment.setStatus(PaymentStatus.CANCELLED);
+                    payment.setPaidAt(null);
+                    break;
+                case "pending":
+                    payment.setStatus(PaymentStatus.PENDING_PAYMENT);
+                    break;
+                default:
+                    throw new ApplicationException("Unhandled transaction status: " + transactionStatus);
+            }
+
+            log.info("Updating payment {} status to {} with settlement time {}",
+                    payment.getId(), payment.getStatus(), settlementTime);
+
+            return paymentRepository.save(payment);
+
+        } catch (DateTimeParseException e) {
+            throw new ApplicationException("Invalid settlement time format: " + settlementTime);
+        } catch (Exception e) {
+            throw new ApplicationException("Error updating payment status: " + e.getMessage());
         }
-        return paymentRepository.save(payment);
     }
 
     @Override
