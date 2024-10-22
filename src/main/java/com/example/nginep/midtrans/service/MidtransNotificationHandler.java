@@ -37,12 +37,13 @@ public class MidtransNotificationHandler {
             String orderId = notification.getString("order_id");
             String transactionStatus = notification.getString("transaction_status");
             String fraudStatus = notification.optString("fraud_status");
+            String settlementTime = notification.optString("settlement_time");
 
             validateTransactionStatus(orderId, transactionStatus);
 
             Payment payment = paymentService.findPaymentByOrderId(orderId);
 
-            Payment updatedPayment = paymentService.updatePaymentStatusMidtrans(payment, transactionStatus, fraudStatus);
+            Payment updatedPayment = paymentService.updatePaymentStatusMidtrans(payment, transactionStatus, fraudStatus, settlementTime);
             Booking updatedBooking = bookingService.updateBookingStatusMidtrans(payment.getBooking(), transactionStatus, fraudStatus);
 
             handlePostUpdateActions(updatedPayment, updatedBooking);
