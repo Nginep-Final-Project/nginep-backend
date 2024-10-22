@@ -198,7 +198,7 @@ public class PaymentServiceImpl implements PaymentService {
 
     private void scheduleUnconfirmedManualPaymentCancellation(Long paymentId) {
         cancelUnconfirmedManualPaymentTask.setPaymentId(paymentId);
-        taskScheduler.schedule(cancelUnconfirmedManualPaymentTask, Instant.now().plus(24, ChronoUnit.HOURS));
+        taskScheduler.schedule(cancelUnconfirmedManualPaymentTask, Instant.now().plus(48, ChronoUnit.HOURS));
     }
 
     @Override
