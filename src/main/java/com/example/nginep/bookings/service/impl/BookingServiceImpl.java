@@ -389,7 +389,12 @@ public class BookingServiceImpl implements BookingService {
         Users user = getCurrentUser();
         Room room = roomService.getRoomById(roomId);
 
-        return bookingRepository.findByUserAndRoomAndStatus(user, room, BookingStatus.PENDING_PAYMENT)
+        return bookingRepository.findPendingBooking(
+                        user,
+                        room,
+                        BookingStatus.PENDING_PAYMENT,
+                        PaymentStatus.AWAITING_CONFIRMATION
+                )
                 .map(Booking::getId)
                 .orElse(null);
     }
@@ -529,8 +534,9 @@ public class BookingServiceImpl implements BookingService {
         return usersService.getDetailUserByEmail(email);
     }
 
+    @Override
     @Transactional
-    private void scheduleCheckInReminder(Booking booking) {
+    public void scheduleCheckInReminder(Booking booking) {
         LocalDate reminderDate = booking.getCheckInDate().minusDays(1);
         LocalTime reminderTime = LocalTime.of(6, 0);
         LocalDateTime reminderDateTime = LocalDateTime.of(reminderDate, reminderTime);
