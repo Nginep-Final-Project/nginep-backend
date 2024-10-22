@@ -2,6 +2,7 @@ package com.example.nginep.bookings.repository;
 
 import com.example.nginep.bookings.entity.Booking;
 import com.example.nginep.bookings.enums.BookingStatus;
+import com.example.nginep.payments.enums.PaymentStatus;
 import com.example.nginep.rooms.entity.Room;
 import com.example.nginep.users.entity.Users;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -35,8 +36,19 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             @Param("tenantId") Long tenantId,
             @Param("excludeStatus") BookingStatus excludeStatus
     );
-    Optional<Booking> findByUserAndRoomAndStatus(Users user, Room room, BookingStatus status);
 
+    @Query("SELECT b FROM Booking b " +
+            "LEFT JOIN b.payment p " +
+            "WHERE b.user = :user " +
+            "AND b.room = :room " +
+            "AND (b.status = :bookingStatus " +
+            "OR p.status = :paymentStatus)")
+    Optional<Booking> findPendingBooking(
+            @Param("user") Users user,
+            @Param("room") Room room,
+            @Param("bookingStatus") BookingStatus bookingStatus,
+            @Param("paymentStatus") PaymentStatus paymentStatus
+    );
     @Query("SELECT COUNT(b) > 0 FROM Booking b " +
             "WHERE b.room.id = :roomId " +
             "AND b.status != :cancelledStatus " +
