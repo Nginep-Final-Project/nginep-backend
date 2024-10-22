@@ -28,4 +28,6 @@ public interface PaymentService {
     void cancelUnconfirmedManualPayment(Long paymentId);
 
     Payment findPaymentByOrderId(String orderId);
+
+    void sendPaymentConfirmationEmail(Payment payment);
 }

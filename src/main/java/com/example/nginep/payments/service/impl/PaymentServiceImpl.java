@@ -15,16 +15,22 @@ import com.example.nginep.payments.enums.PaymentType;
 import com.example.nginep.payments.repository.PaymentRepository;
 import com.example.nginep.payments.service.PaymentService;
 import com.example.nginep.payments.tasks.CancelUnconfirmedManualPaymentTask;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -43,18 +49,20 @@ public class PaymentServiceImpl implements PaymentService {
     private final CancelUnconfirmedManualPaymentTask cancelUnconfirmedManualPaymentTask;
     private final TaskScheduler taskScheduler;
     private final BookingService bookingService;
+    private final JavaMailSender javaMailSender;
 
     private static final List<String> ALLOWED_FILE_EXTENSIONS = Arrays.asList("jpg", "png");
     private static final long MAX_FILE_SIZE = 1024 * 1024;
     private static final int MAX_PAYMENT_ATTEMPTS = 3;
 
-    public PaymentServiceImpl(PaymentRepository paymentRepository, CloudinaryService cloudinaryService, MidtransService midtransService, @Lazy CancelUnconfirmedManualPaymentTask cancelUnconfirmedManualPaymentTask, TaskScheduler taskScheduler, @Lazy BookingService bookingService) {
+    public PaymentServiceImpl(PaymentRepository paymentRepository, CloudinaryService cloudinaryService, MidtransService midtransService, @Lazy CancelUnconfirmedManualPaymentTask cancelUnconfirmedManualPaymentTask, TaskScheduler taskScheduler, @Lazy BookingService bookingService, JavaMailSender javaMailSender) {
         this.paymentRepository = paymentRepository;
         this.cloudinaryService = cloudinaryService;
         this.midtransService = midtransService;
         this.taskScheduler = taskScheduler;
         this.cancelUnconfirmedManualPaymentTask = cancelUnconfirmedManualPaymentTask;
         this.bookingService = bookingService;
+        this.javaMailSender = javaMailSender;
     }
 
     @Override
@@ -221,7 +229,8 @@ public class PaymentServiceImpl implements PaymentService {
 //        payment.getBooking().setStatus(BookingStatus.CONFIRMED);
         Payment confirmedPayment = paymentRepository.save(payment);
 
-//        bookingService.scheduleUnconfirmedBookingCancellation(confirmedPayment.getBooking().getId());
+        sendPaymentConfirmationEmail(confirmedPayment);
+//        bookingService.scheduleCheckInReminder(confirmedPayment.getBooking());
 
         return confirmedPayment;
     }
@@ -311,6 +320,54 @@ public class PaymentServiceImpl implements PaymentService {
     public Payment findPaymentByOrderId(String orderId) {
         return paymentRepository.findById(Long.valueOf(orderId))
                 .orElseThrow(() -> new NotFoundException("Payment not found for order ID: " + orderId));
+    }
+
+    @Override
+    public void sendPaymentConfirmationEmail(Payment payment) {
+        try {
+            String toAddress = payment.getBooking().getUser().getEmail();
+            String fromAddress = "nginepproject@gmail.com";
+            String senderName = "Nginep";
+            String subject = "Payment Confirmed for Your Booking at " +
+                    payment.getBooking().getRoom().getProperty().getPropertyName();
+
+            MimeMessage message = javaMailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true);
+
+            helper.setFrom(new InternetAddress(fromAddress, senderName));
+            helper.setTo(toAddress);
+            helper.setSubject(subject);
+
+            String content = "Dear " + payment.getBooking().getUser().getFullName() + ",<br><br>"
+                    + "Your payment has been confirmed for your upcoming stay at "
+                    + payment.getBooking().getRoom().getProperty().getPropertyName() + ".<br><br>"
+                    + "Booking Details:<br>"
+                    + "Property: " + payment.getBooking().getRoom().getProperty().getPropertyName() + "<br>"
+                    + "Room: " + payment.getBooking().getRoom().getName() + "<br>"
+                    + "Address: " + payment.getBooking().getRoom().getProperty().getPropertyAddress() + ", "
+                    + payment.getBooking().getRoom().getProperty().getPropertyCity() + "<br>"
+                    + "Host: " + payment.getBooking().getRoom().getProperty().getUser().getFullName() + "<br>"
+                    + "Number of Guests: " + payment.getBooking().getNumGuests() + "<br><br>"
+                    + "Check-in time: " + payment.getBooking().getRoom().getProperty().getUser().getCheckinTime() + "<br>"
+                    + "Check-out time: " + payment.getBooking().getRoom().getProperty().getUser().getCheckoutTime() + "<br>"
+                    + "Check-in date: " + payment.getBooking().getCheckInDate() + "<br>"
+                    + "Check-out date: " + payment.getBooking().getCheckOutDate() + "<br><br>"
+                    + "Payment Details:<br>"
+                    + "Amount Paid: Rp " + payment.getAmount().toString() + "<br>"
+                    + "Payment Method: " + payment.getPaymentType() + "<br>"
+                    + "Payment Date: " + payment.getPaidAt() + "GMT+0 / UTC+0 " + "<br>"
+                    + "Transaction ID: " + payment.getId() + "<br><br>"
+                    + "We're excited to have you as our guest!<br><br>"
+                    + "Best regards,<br>"
+                    + "Nginep Team";
+
+            helper.setText(content, true);
+
+            javaMailSender.send(message);
+            log.info("Successfully sent payment confirmation email to {}", toAddress);
+        } catch (MessagingException | UnsupportedEncodingException e) {
+            log.error("Failed to send payment confirmation email", e);
+        }
     }
 
 }

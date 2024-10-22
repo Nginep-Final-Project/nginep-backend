@@ -529,8 +529,9 @@ public class BookingServiceImpl implements BookingService {
         return usersService.getDetailUserByEmail(email);
     }
 
+    @Override
     @Transactional
-    private void scheduleCheckInReminder(Booking booking) {
+    public void scheduleCheckInReminder(Booking booking) {
         LocalDate reminderDate = booking.getCheckInDate().minusDays(1);
         LocalTime reminderTime = LocalTime.of(6, 0);
         LocalDateTime reminderDateTime = LocalDateTime.of(reminderDate, reminderTime);

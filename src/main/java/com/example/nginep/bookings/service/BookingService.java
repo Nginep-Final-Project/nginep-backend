@@ -58,4 +58,6 @@ public interface BookingService {
     void cancelBookingIfNotConfirmed(Long bookingId);
 
     void scheduleUnconfirmedBookingCancellation(Long bookingId);
+
+    void scheduleCheckInReminder(Booking booking);
 }

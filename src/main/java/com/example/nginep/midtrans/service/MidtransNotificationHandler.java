@@ -47,6 +47,10 @@ public class MidtransNotificationHandler {
 
             handlePostUpdateActions(updatedPayment, updatedBooking);
 
+            if (updatedPayment.getStatus() == PaymentStatus.CONFIRMED) {
+                paymentService.sendPaymentConfirmationEmail(updatedPayment);
+            }
+
         } catch (Exception e) {
             log.error("Failed to process Midtrans notification: {}", e.getMessage());
             throw new ApplicationException("Failed to process Midtrans notification: " + e.getMessage());
