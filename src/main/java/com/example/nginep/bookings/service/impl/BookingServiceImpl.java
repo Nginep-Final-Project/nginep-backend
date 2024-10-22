@@ -389,7 +389,12 @@ public class BookingServiceImpl implements BookingService {
         Users user = getCurrentUser();
         Room room = roomService.getRoomById(roomId);
 
-        return bookingRepository.findByUserAndRoomAndStatus(user, room, BookingStatus.PENDING_PAYMENT)
+        return bookingRepository.findPendingBooking(
+                        user,
+                        room,
+                        BookingStatus.PENDING_PAYMENT,
+                        PaymentStatus.AWAITING_CONFIRMATION
+                )
                 .map(Booking::getId)
                 .orElse(null);
     }
